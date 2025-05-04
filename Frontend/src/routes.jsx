@@ -7,7 +7,6 @@ import Footer from "./Component/Footer/index.jsx";
 import Container from "./Component/Container/index.jsx";
 import { UserProvider } from "./context/UserContext.jsx";
 import Message from "./Component/Message/index.jsx";
-import AddPet from "./pages/Pet/AddPet.jsx"
 import FAQ from "./pages/Faq/index.jsx";
 import Sobre from "./pages/Sobre/index.jsx";
 import Vagas from "./pages/Vagas/index.jsx";
@@ -30,7 +29,6 @@ function AppRoutes(){
                     <Route path="/blog/:id" element={<BlogPost/>}/>
                     <Route path="/login" element={<Login/>}/>
                     <Route path="/register" element={<Register/>}/>
-                    <Route path="/create" element={<AddPet/>}/>                    
                 </Routes>
             </Container>
             <Footer/>
