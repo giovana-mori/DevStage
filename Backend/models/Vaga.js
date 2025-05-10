@@ -33,11 +33,7 @@ const vagaSchema = new Schema({
     link_candidatura:{
         type:String,
         required:true
-    },
-    createdAt:{
-        type:Date,
-        default:Date.now
-    },
+    }
 }, {timestamps:true});
 
 const Vaga = mongoose.model('Vaga', vagaSchema);

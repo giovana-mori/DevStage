@@ -48,14 +48,6 @@ const userSchema = new Schema({
     },
     portifolio: {
         type: String
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
     }
 }, {timestamps: true});
 const User = mongoose.model('User', userSchema);

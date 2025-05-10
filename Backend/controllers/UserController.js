@@ -13,36 +13,11 @@ export default class UserController{
         //res.json({message:"Olá"});
         const{nome, email, telefone, password, confirmpassword, instituicao_ensino} = req.body;
         //validar
-        if(!nome)
+        if(!nome || !email || !telefone || !password || !confirmpassword || !instituicao_ensino)
         {
-            res.status(422).json({message:"O nome é obrigatório"});
+            res.status(422).json({message:"Preencha todos os campos"});
             return;
-        } 
-        if(!email)
-        {
-            res.status(422).json({message:"O e-mail é obrigatório"});
-            return;
-        } 
-        if(!telefone)
-        {
-            res.status(422).json({message:"O Telefone é obrigatório"});
-            return;
-        } 
-        if(!instituicao_ensino)
-        {
-            res.status(422).json({message:"É necessário informar a instituição de ensino"});
-            return;
-        } 
-        if(!password)
-        {
-                res.status(422).json({message:"A senha é obrigatória"});
-                return;
-        } 
-        if(!confirmpassword)
-        {
-            res.status(422).json({message:"Confirme a senha"});
-            return;
-        } 
+        }
         if(password !== confirmpassword)
         {
             res.status(422).json({message:"Senhas não são iguais"});
@@ -78,13 +53,9 @@ export default class UserController{
             } catch (error) {
                 return res.status(500).json({message:"Problema ao cadastrar o usuário"});
             }
-            
-
         } catch (error) {
             return res.status(500).json({message:"Tente mais tarde novamente"});
         }
-        
-
     }
 
     static async login(req,res)

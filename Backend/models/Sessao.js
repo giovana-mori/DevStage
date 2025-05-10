@@ -10,13 +10,8 @@ const sessaoSchema = new Schema({
     token: {
         type: String,
         required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-        expires: '30d' // O token expira após 30 dias
     }
-});
+}, {timestamps:true});
 
 const Sessao = mongoose.model('Sessao', sessaoSchema);
 export default Sessao;

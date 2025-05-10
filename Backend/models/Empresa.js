@@ -25,7 +25,6 @@ const empresaSchema = new Schema({
     site: {
         type: String
     },
-
     telefone: {
         type: String
     },
@@ -37,10 +36,10 @@ const empresaSchema = new Schema({
         required: true
     },
     vagas: {
-        type: [String],
+        type: [Object],
         required: true
     }
-});
+}, {timestamps:true});
 
 const Empresa = mongoose.model('Empresa', empresaSchema);
 export default Empresa;
