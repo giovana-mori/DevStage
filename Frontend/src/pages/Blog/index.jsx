@@ -211,7 +211,7 @@ export default function Blog() {
     const categories = [...new Set(blogPosts.map((post) => post.category))]
 
     return (
-        <main className="flex-grow bg-gray-light">
+        <div className="flex-grow bg-gray-light">
             {/* Hero Section */}
             <section className="bg-primary text-white py-12">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -342,6 +342,6 @@ export default function Blog() {
                     </div>
                 </div>
             </section>
-        </main>
+        </div>
     )
 }

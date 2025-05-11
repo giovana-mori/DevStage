@@ -14,12 +14,12 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#6A0DAD", // Roxo principal
+          DEFAULT: "#5E17EB", // Roxo principal
           dark: "#4A0082",
           light: "#8A2BE2",
         },
         secondary: {
-          DEFAULT: "#FFA45B", // Laranja
+          DEFAULT: "#FF914D", // Laranja
           dark: "#FF8C42",
           light: "#FFBE7B",
         },
@@ -49,8 +49,8 @@ module.exports = {
           dark: "#4A5568",
         },
         purple: {
-          light: "#F3EAFF",
-          medium: "#9747FF",
+          light: "#F9F6FF",
+          medium: "#DDCCFF",
           dark: "#6A0DAD",
         },
       },

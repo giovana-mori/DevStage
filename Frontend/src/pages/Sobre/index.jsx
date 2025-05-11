@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 export default function Sobre() {
     return (
-        <main className="flex-grow">
+        <div className="flex-grow">
             {/* Hero Section */}
             <section className="bg-primary text-white py-16">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -299,6 +299,6 @@ export default function Sobre() {
                     </div>
                 </div>
             </section>
-        </main>
+        </div>
     )
 }

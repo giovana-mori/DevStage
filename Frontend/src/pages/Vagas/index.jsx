@@ -205,7 +205,7 @@ export default function Vagas() {
     }
 
     return (
-        <main className="flex-grow">
+        <div className="flex-grow">
             {/* Hero Section com SearchBar */}
             <SearchBar />
 
@@ -465,6 +465,6 @@ export default function Vagas() {
                     </div>
                 </div>
             </section>
-        </main>
+        </div>
     )
 }
