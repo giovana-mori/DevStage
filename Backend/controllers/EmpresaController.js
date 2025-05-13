@@ -1,10 +1,10 @@
-import Empresa from "../models/Empresa";
+import Empresa from "../models/Empresa.js";
 
 export default class EmpresaController {
     static async createEmpresa(req, res) {
         const {nome, localizacao, email_contato, descricao, setor, site, telefone, status, vagas} = req.body;
         const logo = req.file;
-        if(!nome || !localizacao || !email_contato || !setor || !status || !vagas) {
+        if(!nome || !localizacao || !email_contato || !setor || !status) {
             return res.status(422).json({message: "Todos os campos são obrigatórios"});
         }
         const empresa = new Empresa({
@@ -15,19 +15,9 @@ export default class EmpresaController {
             setor,
             site,
             telefone,
-            logo: logo.path,
+            logo,
             status,
-            vagas:[
-                {
-                    titulo: "",
-                    descricao: "",
-                    requisitos: [],
-                    modalidade: "",
-                    localizacao: "",
-                    email_contato: "",
-                    link_candidatura: ""
-                }
-            ]
+            vagas:[]
         });
         try {
             const newEmpresa = await empresa.save();
@@ -38,31 +28,20 @@ export default class EmpresaController {
     }
 
     static async getEmpresas(req, res) {
-        const empresas = await Empresa.find().sort({createdAt: -1});
-        if(!empresas) {
-            return res.status(422).json({message: "Nenhuma empresa encontrada"});
-        }
-        try {
-            return res.status(200).json({empresas});
-        } catch (error) {
-            return res.status(500).json({message: "Erro ao buscar empresas"});
-        }
+        const empresas = await Empresa.find().sort("-createdAt");
+        res.status(200).json({empresas});
     }
 
-    static async getEmpresaById(req, res) {
-        const {id} = req.params;
-        if(!id) {
-            return res.status(422).json({message: "ID da empresa obrigatório"});
+    static async getEmpresaByNome(req, res) {
+        const {nome} = req.body;
+        if(!nome) {
+            return res.status(422).json({message: "Nome da empresa obrigatório na busca"});
         }
-        const empresa = await Empresa.findById(id);
-        if(!empresa) {
+        const empresa = await Empresa.find({"nome": nome}).sort("-createdAt");
+        if(!empresa || empresa.length === 0) {
             return res.status(422).json({message: "Empresa não encontrada"});
         }
-        try {
-            return res.status(200).json({empresa});
-        } catch (error) {
-            return res.status(500).json({message: "Erro ao buscar empresa"});
-        }
+        res.status(200).json({empresa});
     }
 
     static async updateEmpresa(req, res) {

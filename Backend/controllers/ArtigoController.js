@@ -1,15 +1,12 @@
-import Artigo from "../models/Artigo";
+import Artigo from "../models/Artigo.js";
 
 export default class ArtigoController {
-    static async createArtigo() {
+    static async createArtigo(req, res) {
         const {titulo, slug, resumo, conteudo, categoria, autor, tags, cargo_autor, status} = req.body;
         const imagem_capa = req.file;
 
         if(!titulo || !slug || !resumo || !conteudo || !categoria || !autor  || !status) {
             return res.status(422).json({message: "Preencha os campos obrigatórios"});
-        }
-        if(!imagem_capa) {
-            return res.status(422).json({message: "Imagem de capa obrigatória"});
         }
 
         const artigo = new Artigo({
@@ -19,7 +16,7 @@ export default class ArtigoController {
             conteudo,
             categoria,
             autor,
-            imagem_capa: imagem_capa.path,
+            imagem_capa,
             tags:[],
             cargo_autor,
             status
@@ -34,44 +31,32 @@ export default class ArtigoController {
         }
     }
 
-    static async getArtigos(res) {
-        const artigos = await Artigo.find().sort({createdAt: -1});
-        if(!artigos) {
-            res.status(422).json({message: "Nenhum artigo encontrado"});
-        }
-        try {
-            return res.status(200).json({artigos});
-        }
-        catch (error) {
-            return res.status(500).json({message: "Erro ao buscar artigos"});
-        }
+    static async getArtigos(req, res) {
+        const artigos = await Artigo.find().sort("-createdAt");
+        res.status(200).json({ artigos });
     }
 
-    static async getArtigoById(req, res) {
-        const {id} = req.params;
-        if(!id) {
-            return res.status(422).json({message: "ID do artigo obrigatório"});
+    static async getArtigoByTitulo(req, res) {
+        const {titulo} = req.body;
+        if(!titulo) {
+            return res.status(422).json({message: "Titulo do artigo obrigatório na busca"});
         }
-        const artigo = await Artigo.findById(id);
-        if(!artigo) {
+        const artigo = await Artigo.find({"titulo": titulo}).sort("-createdAt");
+        if(!artigo || artigo.length === 0) {
             return res.status(422).json({message: "Artigo não encontrado"});
         }
-        try {
-            return res.status(200).json({artigo});
-        }
-        catch (error) {
-            return res.status(500).json({message: "Erro ao buscar artigo"});
-        }
+        res.status(200).json({artigo});
+        
     }
 
     static async updateArtigo(req, res) {
-        const {id} = req.params;
+        const {_id} = req.params;
         const {titulo, slug, resumo, conteudo, categoria, autor, tags, cargo_autor, status} = req.body;
         const imagem_capa = req.file;
-        if(!id) {
+        if(!_id) {
             return res.status(422).json({message: "ID do artigo é obvrigatório"});
         }
-        const artigo = await Artigo.findById(id);
+        const artigo = await Artigo.findById(_id);
         if(!artigo) {
             return res.status(422).json({message: "Artigo não encontrado"});
         }
@@ -97,16 +82,16 @@ export default class ArtigoController {
     }
 
     static async deleteArtigo(req, res) {
-        const {id} = req.params;
-        if(!id) {
+        const {_id} = req.params;
+        if(!_id) {
             return res.status(422).json({message: "ID do artigo obrigatório"});
         }
-        const artigo = await Artigo.findById(id);
+        const artigo = await Artigo.findById(_id);
         if(!artigo) {
             return res.status(422).json({message: "Artigo não encontrado"});
         }
         try {
-            await Artigo.findByIdAndDelete(id);
+            await Artigo.findByIdAndDelete(_id);
             return res.status(200).json({message: "Artigo deletado com sucesso"});
         }
         catch (error) {

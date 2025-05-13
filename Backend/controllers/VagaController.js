@@ -4,23 +4,24 @@ import Empresa from '../models/Empresa.js';
 export default class VagaController {
     static async createVaga(req,res){
         const {titulo, descricao, requisitos, modalidade, localizacao, email_contato, link_candidatura} = req.body;
-        const empresa = req.params.id;
+        //const empresa = req.params.id;
         if(!titulo || !descricao || !requisitos || !modalidade || !localizacao || !email_contato || !link_candidatura) {
             return res.status(422).json({message: "Todos os campos são obrigatórios"});
         }
-        if(!empresa) {
+        /*if(!empresa) {
             return res.status(422).json({message: "Empresa é obrigatória"});
-        }
+        }*/
         const vaga = new Vaga({
             titulo,
             descricao,
-            requisitos,
+            requisitos:[],
             modalidade,
             localizacao,
             email_contato,
             link_candidatura,
             empresa:{
-                _id: empresa,
+                
+                /*_id: empresa,
                 nome: req.body.nome,
                 localizacao: req.body.localizacao,
                 email_contato: req.body.email_contato,
@@ -29,7 +30,7 @@ export default class VagaController {
                 site: req.body.site,
                 telefone: req.body.telefone,
                 logo: req.body.logo,
-                status: req.body.status
+                status: req.body.status*/
             }
         });
         try {
@@ -41,31 +42,23 @@ export default class VagaController {
     }
 
     static async getVagas(req,res){
-        const vagas = await Vaga.find().sort({createdAt: -1});
+        const {vagas} = await Vaga.find().sort("-createdAt");
         if(!vagas) {
             return res.status(422).json({message: "Nenhuma vaga encontrada"});
         }
-        try {
-            return res.status(200).json({vagas});
-        } catch (error) {
-            return res.status(500).json({message: "Erro ao buscar vagas"});
-        }
+        res.status(200).json({vagas});
     }
 
-    static async getVagaById(req,res){
-        const {id} = req.params;
-        if(!id) {
-            return res.status(422).json({message: "ID da vaga obrigatório"});
+    static async getVagaByTitulo(req,res){
+        const {titulo} = req.body;
+        if(!titulo) {
+            return res.status(422).json({message: "Nome da vaga obrigatório"});
         }
-        const vaga = await Vaga.findById(id);
-        if(!vaga) {
+        const vaga = await Vaga.find({"titulo": titulo}).sort("-createdAt");
+        if(!vaga || vaga.length === 0) {
             return res.status(422).json({message: "Vaga não encontrada"});
         }
-        try {
-            return res.status(200).json({vaga});
-        } catch (error) {
-            return res.status(500).json({message: "Erro ao buscar vaga"});
-        }
+        res.status(200).json({vaga});
     }
 
     static async updateVaga(req,res){

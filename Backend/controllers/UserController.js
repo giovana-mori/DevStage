@@ -1,9 +1,3 @@
-/*
-averiguar quais informações vao ser registradas na hora do register
-
-
-*/
-
 import User from "../models/User.js";
 import Argon2 from "argon2";
 import createUserToken from "../helpers/create-token.js";
@@ -11,9 +5,9 @@ export default class UserController{
     static async register(req,res)
     {
         //res.json({message:"Olá"});
-        const{nome, email, telefone, password, confirmpassword, instituicao_ensino} = req.body;
+        const{nome, email, telefone, password, confirmpassword, tipo, status, curso, instituicao_ensino} = req.body;
         //validar
-        if(!nome || !email || !telefone || !password || !confirmpassword || !instituicao_ensino)
+        if(!nome || !email || !telefone || !password || !confirmpassword || !tipo || !status || !curso || !instituicao_ensino)
         {
             res.status(422).json({message:"Preencha todos os campos"});
             return;
@@ -42,6 +36,9 @@ export default class UserController{
                 email,
                 telefone,
                 password:passwordhash,
+                tipo,
+                status,
+                curso,
                 instituicao_ensino
             });
             try {
@@ -61,14 +58,9 @@ export default class UserController{
     static async login(req,res)
     {
         const {email, password} = req.body;
-        if(!email)
+        if(!email || !password)
         {
-            res.status(422).json({message:"O e-mail é obrigatório"});
-            return;
-        } 
-        if(!password)
-        {
-            res.status(422).json({message:"A senha é obrigatória"});
+            res.status(422).json({message:"Preencha os campos obrigatórios"});
             return;
         } 
         const userExist = await User.findOne({email:email});
@@ -85,4 +77,5 @@ export default class UserController{
         //gerar token
         await createUserToken(userExist, req, res);
     }
+
 }
