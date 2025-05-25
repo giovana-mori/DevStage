@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from '../db/conn.js';
 
 const { Schema } = mongoose;
 const empresaSchema = new Schema({
@@ -33,12 +33,16 @@ const empresaSchema = new Schema({
         type: String
     },
     status:{
-        type: Boolean,
+        type: String,
         required: true
     },
     vagas: {
+<<<<<<< HEAD
         type: [String],
         required: true
+=======
+        type: [Object],
+>>>>>>> origin/routers
     }
 });
 

@@ -1,5 +1,5 @@
 //Armazenamento de tokens de refresh
-import mongoose from 'mongoose';
+import mongoose from '../db/conn.js';
 
 const { Schema } = mongoose;
 const sessaoSchema = new Schema({

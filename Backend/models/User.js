@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from '../db/conn.js';
 
 const { Schema } = mongoose;
 const userSchema = new Schema({
@@ -20,18 +20,15 @@ const userSchema = new Schema({
     },
     tipo: {
         type: String,
-        required: true,
-        enum: ['admin', 'estudante', 'recrutador']
+        required: true
     },
     status:{
-        type: Boolean,
+        type: String,
         required: true
     },
     curso: { //averiguar dps se entra pois 
         type: String,
-        required: function() { //obrigatorio para estudante
-            return this.tipo === 'estudante';
-        }
+        required: true
     },
     instituicao_ensino: {
         type: String,
