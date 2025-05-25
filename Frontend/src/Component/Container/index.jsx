@@ -1,6 +1,6 @@
 function Container({children}){
     return(
-        <main>{children}</main>
+        <main className="pt-16">{children}</main>
     )
 }
 export default Container;

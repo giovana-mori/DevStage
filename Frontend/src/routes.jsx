@@ -28,7 +28,7 @@ function AppRoutes(){
                     <Route path="/blog" element={<Blog/>}/>
                     <Route path="/blog/:id" element={<BlogPost/>}/>
                     <Route path="/login" element={<Login/>}/>
-                    <Route path="/register" element={<Register/>}/>
+                    <Route path="/registrar" element={<Register/>}/>
                 </Routes>
             </Container>
             <Footer/>
