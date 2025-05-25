@@ -37,12 +37,7 @@ const empresaSchema = new Schema({
         required: true
     },
     vagas: {
-<<<<<<< HEAD
-        type: [String],
-        required: true
-=======
         type: [Object],
->>>>>>> origin/routers
     }
 });
 
