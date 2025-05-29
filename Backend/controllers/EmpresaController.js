@@ -12,9 +12,7 @@ export default class EmpresaController {
 
     try {
       const newEmpresa = await empresa.save();
-      return res
-        .status(201)
-        .json({ message: "Empresa criada com sucesso", empresa: newEmpresa });
+      return res.status(201).json({ message: "Empresa criada com sucesso", empresa: newEmpresa });
     } catch (error) {
       if (error.name === "ValidationError") {
         const errors = Object.keys(error.errors).map((field) => ({

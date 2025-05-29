@@ -6,6 +6,11 @@ const empresaSchema = new Schema({
         type: String,
         required: true
     },
+    cnpj: {
+        type: String,
+        required: true,
+        unique: true
+    },
     localizacao: {
         type: String,
         required: true

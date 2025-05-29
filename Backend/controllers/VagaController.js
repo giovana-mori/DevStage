@@ -1,3 +1,4 @@
+import Empresa from "../models/Empresa.js";
 import Vaga from "../models/Vaga.js";
 
 export default class VagaController {
@@ -8,11 +9,15 @@ export default class VagaController {
       empresa: req.body.empresa || {}, // caso você deseje ajustar isso depois
     });
 
+    const empresa = req.body.empresa;
+
     try {
       const newVaga = await vaga.save();
-      return res
-        .status(201)
-        .json({ message: "Vaga criada com sucesso", vaga: newVaga });
+      const addVagaToEmpresa = await Empresa.findByIdAndUpdate(empresa._id, {
+        $addToSet: { vagas: newVaga }}, { new: true }
+      );
+
+      return res.status(201).json({ message: "Vaga criada com sucesso", vaga: newVaga, empresa: addVagaToEmpresa });
     } catch (error) {
       if (error.name === "ValidationError") {
         const errors = Object.keys(error.errors).map((field) => ({

@@ -7,6 +7,6 @@ routesVaga.post('/CadastrarVaga', VagaController.createVaga);
 routesVaga.get('/', VagaController.getVagas);
 routesVaga.get('/:titulo', VagaController.getVagaByTitulo);
 routesVaga.post('/EditarVaga/:id', VagaController.updateVaga);
-routesVaga.post('/ExcluirVaga/:id', VagaController.deleteVaga);
+routesVaga.delete('/ExcluirVaga/:id', VagaController.deleteVaga);
 
 export default routesVaga;
