@@ -11,6 +11,11 @@ const userSchema = new Schema({
         required: true,
         unique: true
     },
+    cpf: {
+        type: String,
+        required: true,
+        unique: true
+    },
     telefone: {
         type: String
     },

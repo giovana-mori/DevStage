@@ -34,6 +34,9 @@ const vagaSchema = new Schema({
         type:String,
         required:true
     },
+    candidatos: {
+        type: [Object]
+    },
     createdAt:{
         type:Date,
         default:Date.now
