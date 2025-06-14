@@ -1,47 +1,111 @@
-import mongoose from '../db/conn.js';
+import mongoose from "../db/conn.js";
 
 const { Schema } = mongoose;
-const vagaSchema = new Schema({
+
+const candidatoSchema = new Schema({
+  usuarioId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+  },
+  dataCandidatura: {
+    type: Date,
+    default: Date.now,
+  },
+  cartaApresentacao: {
+    type: String,
+  },
+  status: {
+    type: String,
+    enum: ["pendente", "visualizada", "aprovada", "rejeitada"],
+    default: "pendente",
+  },
+});
+
+const vagaSchema = new Schema(
+  {
     titulo: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     descricao: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
+    },
+    responsabilidades: {
+      type: [String],
+      required: true,
     },
     requisitos: {
-        type: [String],
-        required: true
+      type: [String],
+      required: true,
+    },
+    diferenciais: {
+      type: [String],
+      default: [],
+    },
+    beneficios: {
+      type: [String],
+      required: true,
     },
     modalidade: {
-        type: String,
-        required: true
+      type: String,
+      enum: ["Presencial", "Remoto", "Híbrido"],
+      required: true,
     },
     localizacao: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
-    empresa:{
-        type: Object,
-        required:true
+    tipoContrato: {
+      type: String,
+      enum: ["CLT", "PJ", "Estágio", "Freelance"],
+      required: true,
     },
-    email_contato:{
-        type:String,
-        required:true
+    nivel: {
+      type: String,
+      enum: ["Júnior", "Pleno", "Sênior", "Estagiário"],
+      required: true,
     },
-    link_candidatura:{
-        type:String,
-        required:true
+    salario: {
+      type: String,
+      required: true,
+    },
+    vagasDisponiveis: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    empresa: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    email_contato: {
+      type: String,
+      required: true,
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        "Por favor, informe um e-mail válido",
+      ],
+    },
+    link_candidatura: {
+      type: String,
+      required: true,
     },
     candidatos: {
-        type: [Object]
+      type: [candidatoSchema],
+      default: [],
     },
-    createdAt:{
-        type:Date,
-        default:Date.now
+    publicadoEm: {
+      type: Date,
+      default: Date.now,
     },
-}, {timestamps:true});
+    ativo: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  { timestamps: true }
+);
 
-const Vaga = mongoose.model('Vaga', vagaSchema);
+const Vaga = mongoose.model("Vaga", vagaSchema);
 export default Vaga;
