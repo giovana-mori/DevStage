@@ -1,4 +1,5 @@
 import mongoose from "../db/conn.js";
+import Empresa from "./Empresa.js"; // Importe o modelo Empresa
 
 const { Schema } = mongoose;
 
@@ -77,6 +78,7 @@ const vagaSchema = new Schema(
     },
     empresa: {
       type: Schema.Types.ObjectId,
+      ref: "Empresa", // Deve ser igual ao nome do modelo
       required: true,
     },
     email_contato: {

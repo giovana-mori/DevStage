@@ -12,7 +12,9 @@ export default class EmpresaController {
 
     try {
       const newEmpresa = await empresa.save();
-      return res.status(201).json({ message: "Empresa criada com sucesso", empresa: newEmpresa });
+      return res
+        .status(201)
+        .json({ message: "Empresa criada com sucesso", empresa: newEmpresa });
     } catch (error) {
       if (error.name === "ValidationError") {
         const errors = Object.keys(error.errors).map((field) => ({
@@ -26,8 +28,15 @@ export default class EmpresaController {
   }
 
   static async getEmpresas(req, res) {
-    const empresas = await Empresa.find().sort("-createdAt");
-    res.status(200).json({ empresas });
+    try {
+      const empresas = await Empresa.find().populate({
+        path: "vagas",
+        model: "Vaga", // Especifica o modelo a ser populado
+      });
+      res.status(200).json(empresas);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   }
 
   static async getEmpresaByNome(req, res) {
@@ -63,12 +72,10 @@ export default class EmpresaController {
         { new: true }
       );
 
-      return res
-        .status(200)
-        .json({
-          message: "Empresa atualizada com sucesso",
-          empresa: updatedEmpresa,
-        });
+      return res.status(200).json({
+        message: "Empresa atualizada com sucesso",
+        empresa: updatedEmpresa,
+      });
     } catch (error) {
       return res.status(500).json({ message: "Erro ao atualizar empresa" });
     }

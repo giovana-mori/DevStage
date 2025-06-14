@@ -5,37 +5,37 @@ import getUserByToken from "../helpers/get-user-by-token.js";
 
 export default class VagaController {
   static async createVaga(req, res) {
-    const vaga = new Vaga({
-      ...req.body,
-      requisitos: req.body.requisitos || [],
-      empresa: req.body.empresa || {}, // caso você deseje ajustar isso depois
-    });
-
-    const empresa = req.body.empresa;
-
     try {
-      const newVaga = await vaga.save();
-      const addVagaToEmpresa = await Empresa.findByIdAndUpdate(empresa._id, {
-        $addToSet: { vagas: newVaga }
-      }, { new: true }
+      // Verifica se a empresa existe
+      const empresa = await Empresa.findById(req.body.empresa);
+      if (!empresa) {
+        return res.status(404).json({ message: "Empresa não encontrada" });
+      }
+
+      // Cria a vaga
+      const vaga = new Vaga(req.body);
+      const savedVaga = await vaga.save();
+
+      // Atualiza a empresa com a nova vaga
+      await Empresa.findByIdAndUpdate(
+        req.body.empresa,
+        { $push: { vagas: savedVaga._id } },
+        { new: true }
       );
 
-      return res.status(201).json({ message: "Vaga criada com sucesso", vaga: newVaga, empresa: addVagaToEmpresa });
+      res.status(201).json(savedVaga);
     } catch (error) {
-      if (error.name === "ValidationError") {
-        const errors = Object.keys(error.errors).map((field) => ({
-          field,
-          message: error.errors[field].message,
-        }));
-        return res.status(400).json({ message: "Erro de validação", errors });
-      }
-      return res.status(500).json({ message: "Erro ao criar vaga" });
+      res.status(400).json({ error: error.message });
     }
   }
 
   static async getVagas(req, res) {
-    const vagas = await Vaga.find().sort("-createdAt");
-    res.status(200).json({ vagas });
+    try {
+      const vagas = await Vaga.find().populate("empresa"); // Note o 'empresa' minúsculo
+      res.status(200).json(vagas);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   }
 
   static async getVagaByTitulo(req, res) {
@@ -76,7 +76,7 @@ export default class VagaController {
   }
 
   static async deleteVaga(req, res) {
-    const id  = req.params.id;
+    const id = req.params.id;
     try {
       const vaga = await Vaga.findByIdAndDelete(id);
       if (!vaga) {
@@ -104,7 +104,8 @@ export default class VagaController {
         {
           $addToSet: {
             candidatos: {
-              user: { // informações do usuário sem informações sensíveis
+              user: {
+                // informações do usuário sem informações sensíveis
                 _id: user._id,
                 nome: user.nome,
                 email: user.email,
@@ -116,17 +117,21 @@ export default class VagaController {
                 github: user.github,
                 linkedin: user.linkedin,
                 sobre: user.sobre,
-                portifolio: user.portifolio
-              }
-            }
+                portifolio: user.portifolio,
+              },
+            },
           },
         },
         { new: true }
       );
-      return res.status(200).json({ message: "Usuário adicionado à vaga com sucesso", vaga: addingUser });
-    }
-    catch (error) {
-      return res.status(500).json({ message: "Erro ao adicionar usuário à vaga" });
+      return res.status(200).json({
+        message: "Usuário adicionado à vaga com sucesso",
+        vaga: addingUser,
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Erro ao adicionar usuário à vaga" });
     }
   }
 
@@ -136,11 +141,12 @@ export default class VagaController {
       return res.status(422).json({ message: "Vaga não encontrada" });
     }
     try {
-      const listaCandidatos = await Vaga.findById(vaga).select('candidatos');
+      const listaCandidatos = await Vaga.findById(vaga).select("candidatos");
       return res.status(200).json({ listaCandidatos });
-    }
-    catch (error) {
-      return res.status(500).json({ message: "Erro ao obter candidatos da vaga" });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Erro ao obter candidatos da vaga" });
     }
   }
 }
