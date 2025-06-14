@@ -18,7 +18,7 @@ export default function useAuth() {
     let msgText = "Cadastro realizado com sucesso";
     let msgType = "success";
     try {
-      const response = await api.post("users/Register", user);
+      const response = await api.post("user/Registrar", user);
       navigate("/login");
       return response.data;
     } catch (error) {
@@ -32,7 +32,7 @@ export default function useAuth() {
     let msgText = "Login com sucesso";
     let msgType = "success";
     try {
-      const response = await api.post("users/Login", user);
+      const response = await api.post("user/Login", user);
       console.log(response.data);
       await authUser(response.data);
       navigate("/");

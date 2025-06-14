@@ -13,6 +13,7 @@ import {
   GitBranch,
   Linkedin,
   FileText,
+  Briefcase,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -23,7 +24,7 @@ function Register() {
     email: "",
     telefone: "",
     password: "",
-    tipo: "aluno",
+    tipo: "estudante",
     status: "ativo",
     curso: "",
     instituicao_ensino: "",
@@ -82,7 +83,6 @@ function Register() {
     try {
       await register(user);
     } catch (error) {
-      debugger
       setErrors({
         submit: error.message || "Erro ao registrar. Tente novamente.",
       });
@@ -107,32 +107,94 @@ function Register() {
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Nome */}
+                {/* Tipo de Usuário */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nome Completo
+                    Tipo de Conta
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      name="nome"
-                      value={user.nome}
+                    <select
+                      name="tipo"
+                      value={user.tipo}
                       onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
-                        errors.nome
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="Seu nome completo"
-                    />
+                      className="block w-full pl-3 pr-10 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    >
+                      <option value="estudante">Estudante</option>
+                      <option value="empresa">Empresa</option>
+                    </select>
                   </div>
-                  {errors.nome && (
-                    <p className="mt-1 text-sm text-red-600">{errors.nome}</p>
-                  )}
                 </div>
+                {/* Nome */}
+                {user.tipo === "estudante" ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Nome Completo
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <User className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="nome"
+                          value={user.nome}
+                          onChange={handleChange}
+                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+                            errors.nome
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="Seu nome completo"
+                        />
+                      </div>
+                      {errors.nome && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.nome}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* CNPJ */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        CNPJ
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Briefcase className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="cnpj"
+                          value={user.cnpj}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Seu CNPJ"
+                        />
+                      </div>
+                    </div>
 
+                    {/* Razão Social */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Razão Social
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Building className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="razao_social"
+                          value={user.razao_social}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Sua razão social"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
                 {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -219,115 +281,103 @@ function Register() {
                   )}
                 </div>
 
-                {/* Tipo de Usuário */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tipo de Conta
-                  </label>
-                  <div className="relative">
-                    <select
-                      name="tipo"
-                      value={user.tipo}
-                      onChange={handleChange}
-                      className="block w-full pl-3 pr-10 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                    >
-                      <option value="aluno">Aluno</option>
-                      <option value="empresa">Empresa</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Curso */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Curso
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <BookOpen className="h-5 w-5 text-gray-400" />
+                {user.tipo.toLowerCase() === "estudante" && (
+                  <>
+                    {/* Curso */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Curso
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <BookOpen className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="curso"
+                          value={user.curso}
+                          onChange={handleChange}
+                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+                            errors.curso
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="Seu curso"
+                        />
+                      </div>
+                      {errors.curso && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.curso}
+                        </p>
+                      )}
                     </div>
-                    <input
-                      name="curso"
-                      value={user.curso}
-                      onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
-                        errors.curso
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="Seu curso"
-                    />
-                  </div>
-                  {errors.curso && (
-                    <p className="mt-1 text-sm text-red-600">{errors.curso}</p>
-                  )}
-                </div>
 
-                {/* Instituição de Ensino */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Instituição de Ensino
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Building className="h-5 w-5 text-gray-400" />
+                    {/* Instituição de Ensino */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Instituição de Ensino
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Building className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="instituicao_ensino"
+                          value={user.instituicao_ensino}
+                          onChange={handleChange}
+                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+                            errors.instituicao_ensino
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="Sua instituição de ensino"
+                        />
+                      </div>
+                      {errors.instituicao_ensino && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.instituicao_ensino}
+                        </p>
+                      )}
                     </div>
-                    <input
-                      name="instituicao_ensino"
-                      value={user.instituicao_ensino}
-                      onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
-                        errors.instituicao_ensino
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="Sua instituição de ensino"
-                    />
-                  </div>
-                  {errors.instituicao_ensino && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.instituicao_ensino}
-                    </p>
-                  )}
-                </div>
 
-                {/* GitHub */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    GitHub (Opcional)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <GitBranch className="h-5 w-5 text-gray-400" />
+                    {/* GitHub */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        GitHub (Opcional)
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <GitBranch className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="github"
+                          value={user.github}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Seu perfil do GitHub"
+                        />
+                      </div>
                     </div>
-                    <input
-                      name="github"
-                      value={user.github}
-                      onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                      placeholder="Seu perfil do GitHub"
-                    />
-                  </div>
-                </div>
 
-                {/* LinkedIn */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    LinkedIn (Opcional)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Linkedin className="h-5 w-5 text-gray-400" />
+                    {/* LinkedIn */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        LinkedIn (Opcional)
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Linkedin className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="linkedin"
+                          value={user.linkedin}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Seu perfil do LinkedIn"
+                        />
+                      </div>
                     </div>
-                    <input
-                      name="linkedin"
-                      value={user.linkedin}
-                      onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                      placeholder="Seu perfil do LinkedIn"
-                    />
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
 
               {/* Sobre e Portfólio */}

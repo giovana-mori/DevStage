@@ -3,6 +3,7 @@ import FeatureCard from "../../Component/lib/FeatureCard.jsx";
 import SearchBar from "../../Component/lib/SearchBar";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Header from "../../Component/Header/index.jsx";
 function Home() {
   const [pets, setPets] = useState([]);
   // useEffect(()=>{
@@ -13,9 +14,9 @@ function Home() {
   //     })
   // },[])
 
-  
   return (
     <div className="flex-grow">
+      <Header />
       {/* Hero Section */}
       <section className="relative bg-purple-light overflow-hidden flex flex-col justify-between pt-20">
         <div className="container flex h-full items-center mx-auto px-4 sm:px-6 lg:px-8 py-12 md:pb-0 md:py-16 relative z-10">

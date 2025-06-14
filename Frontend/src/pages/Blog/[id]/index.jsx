@@ -49,7 +49,7 @@ const blogPosts = [
         date: "15 de Maio, 2023",
         category: "Carreira",
         readTime: "5 min de leitura",
-        image: "/placeholder.svg?height=400&width=800",
+        image: "https://placehold.co/600x400/EEE/31343C",
         tags: ["Entrevista", "Estágio", "Carreira"],
     },
     {
@@ -97,7 +97,7 @@ const blogPosts = [
         date: "02 de Maio, 2023",
         category: "Tecnologia",
         readTime: "7 min de leitura",
-        image: "/placeholder.svg?height=400&width=800",
+        image: "https://placehold.co/600x400/EEE/31343C",
         tags: ["JavaScript", "React", "Node.js", "Tecnologia"],
     },
     {
@@ -112,7 +112,7 @@ const blogPosts = [
         date: "25 de Abril, 2023",
         category: "Portfólio",
         readTime: "6 min de leitura",
-        image: "/placeholder.svg?height=400&width=800",
+        image: "https://placehold.co/600x400/EEE/31343C",
         tags: ["Portfólio", "Projetos", "GitHub"],
     },
     {
@@ -126,7 +126,7 @@ const blogPosts = [
         date: "18 de Abril, 2023",
         category: "Produtividade",
         readTime: "4 min de leitura",
-        image: "/placeholder.svg?height=400&width=800",
+        image: "https://placehold.co/600x400/EEE/31343C",
         tags: ["Produtividade", "Estudo", "Equilíbrio"],
     },
     {
@@ -140,7 +140,7 @@ const blogPosts = [
         date: "10 de Abril, 2023",
         category: "Carreira",
         readTime: "8 min de leitura",
-        image: "/placeholder.svg?height=400&width=800",
+        image: "https://placehold.co/600x400/EEE/31343C",
         tags: ["Soft Skills", "Recrutamento", "Carreira"],
     },
     {
@@ -155,7 +155,7 @@ const blogPosts = [
         date: "05 de Abril, 2023",
         category: "Currículo",
         readTime: "5 min de leitura",
-        image: "/placeholder.svg?height=400&width=800",
+        image: "https://placehold.co/600x400/EEE/31343C",
         tags: ["Currículo", "LinkedIn", "Carreira"],
     },
 ]
@@ -194,8 +194,6 @@ export default function BlogPost({ params }) {
     const [relatedPosts, setRelatedPosts] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     const { id } = useParams();
-
-    debugger;
 
     useEffect(() => {
         // Simular carregamento de dados

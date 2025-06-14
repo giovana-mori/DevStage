@@ -1,6 +1,7 @@
 
 import { useState } from "react"
 import { Link } from "react-router-dom";
+import Header from "../../Component/Header/index.jsx";
 
 const faqData = [
     {
@@ -338,6 +339,7 @@ export default function FAQ() {
 
     return (
         <>
+            <Header />
             {/* Hero Section */}
             <section className="bg-primary text-white py-16">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
