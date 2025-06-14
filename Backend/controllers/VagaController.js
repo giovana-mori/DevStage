@@ -32,7 +32,7 @@ export default class VagaController {
   static async getVagas(req, res) {
     try {
       const vagas = await Vaga.find().populate("empresa"); // Note o 'empresa' minúsculo
-      res.status(200).json(vagas);
+      res.status(200).json({ vagas });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
