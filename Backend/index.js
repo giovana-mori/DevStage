@@ -22,7 +22,7 @@ app.use("/artigos", routesArtigo);
 app.use("/empresas", routesEmpresa);
 //app.use("/sessao", routesSessao);
 app.use("/vagas", routesVaga);
-app.use("/user", routesUser);
+app.use("/users", routesUser);
 //usar os routes como no ex abaixo
 //app.use("/users", routes);
 

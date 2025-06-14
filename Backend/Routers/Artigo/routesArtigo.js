@@ -6,6 +6,6 @@ routesArtigo.post('/CadastrarArtigo', ArtigoController.createArtigo);
 routesArtigo.get('/', ArtigoController.getArtigos);
 routesArtigo.get('/:titulo', ArtigoController.getArtigoByTitulo);
 routesArtigo.post('/EditarArtigo', ArtigoController.updateArtigo);
-routesArtigo.post('/ExcluirArtigo', ArtigoController.deleteArtigo);
+routesArtigo.delete('/ExcluirArtigo', ArtigoController.deleteArtigo);
 
 export default routesArtigo;

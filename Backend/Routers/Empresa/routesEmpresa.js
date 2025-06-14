@@ -6,6 +6,6 @@ routesEmpresa.post('/CadastrarEmpresa', EmpresaController.createEmpresa);
 routesEmpresa.get('/', EmpresaController.getEmpresas);
 routesEmpresa.get('/:nome', EmpresaController.getEmpresaByNome);
 routesEmpresa.post('/EditarEmpresa/:id', EmpresaController.updateEmpresa);
-routesEmpresa.post('/ExcluirEmpresa/:id', EmpresaController.deleteEmpresa);
+routesEmpresa.delete('/ExcluirEmpresa/:id', EmpresaController.deleteEmpresa);
 
 export default routesEmpresa;
