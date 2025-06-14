@@ -33,7 +33,7 @@ export default class EmpresaController {
         path: "vagas",
         model: "Vaga", // Especifica o modelo a ser populado
       });
-      res.status(200).json(empresas);
+      res.status(200).json({ empresas });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
