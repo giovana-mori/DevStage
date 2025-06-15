@@ -102,7 +102,7 @@ export default class UserController {
   }
 
   static async update(req, res) {
-    try{
+    try {
       const token = getToken(req);
       const user = await getUserByToken(token);
       const updatedData = req.body;
@@ -110,14 +110,45 @@ export default class UserController {
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
       // Atualiza os campos do usuário com os dados recebidos
-      const updatedUser = await User.findByIdAndUpdate(
-        user._id,
-        updatedData,
-        { new: true }
-      );
-      return res.status(200).json({message: "Usuário atualizado com sucesso", updatedUser,});
-    }catch(error){
-      res.status(500).json({ message: "Erro ao atualizar usuário", error: error.message });
+      const updatedUser = await User.findByIdAndUpdate(user._id, updatedData, {
+        new: true,
+      });
+      return res
+        .status(200)
+        .json({ message: "Usuário atualizado com sucesso", updatedUser });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Erro ao atualizar usuário", error: error.message });
+    }
+  }
+
+  static async getUsers(req, res) {
+    try {
+      const { search } = req.query;
+      let query = {};
+
+      if (search) {
+        const regex = new RegExp(search, "i"); // Busca case-insensitive
+
+        //Ele faz uma busca com OR, ele vai testando em cada coluna para ver se tem algo semelhante ao que foi digitado pelo usuario
+        query.$or = [
+          { nome: { $regex: regex } },
+          { email: { $regex: regex } },
+          { tipo: { $regex: regex } },
+          { status: { $regex: regex } },
+          { curso: { $regex: regex } },
+          { instituicao_ensino: { $regex: regex } },
+          { github: { $regex: regex } },
+          { linkedin: { $regex: regex } },
+          { sobre: { $regex: regex } },
+          { portifolio: { $regex: regex } },
+        ];
+      }
+      const users = await User.find(query).select("-password");
+      return res.status(200).json({ users });
+    } catch (error) {
+      return res.status(500).json({ message: "Erro ao obter usuários" });
     }
   }
 }

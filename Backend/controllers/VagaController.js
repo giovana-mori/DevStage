@@ -28,13 +28,66 @@ export default class VagaController {
       res.status(400).json({ error: error.message });
     }
   }
-
   static async getVagas(req, res) {
     try {
-      const vagas = await Vaga.find().populate("empresa"); // Note o 'empresa' minúsculo
+      const {
+        search,
+        modalidade,
+        tipoContrato,
+        nivel,
+        empresa,
+        localizacao,
+        sortBy = "-createdAt",
+      } = req.query;
+
+      // Construir query dinâmica
+      const query = {};
+
+      // Busca textual (case-insensitive)
+      if (search) {
+        const regex = new RegExp(search, "i");
+        query.$or = [
+          { titulo: { $regex: regex } },
+          { descricao: { $regex: regex } },
+          { responsabilidades: { $regex: regex } },
+          { requisitos: { $regex: regex } },
+          { beneficios: { $regex: regex } },
+          { "empresa.nome": { $regex: regex } }, // Busca no nome da empresa populada
+        ];
+      }
+
+      // Filtros exatos
+      if (modalidade) query.modalidade = modalidade;
+      if (tipoContrato) query.tipoContrato = tipoContrato;
+      if (nivel) query.nivel = nivel;
+      if (localizacao) {
+        query.localizacao = new RegExp(localizacao, "i");
+      }
+
+      // Filtro por empresa (ID ou nome)
+      if (empresa) {
+        const isObjectId = /^[0-9a-fA-F]{24}$/.test(empresa);
+
+        if (isObjectId) {
+          query.empresa = empresa;
+        } else {
+          // Busca por nome da empresa usando lookup
+          const empresas = await Empresa.find({
+            nome: new RegExp(empresa, "i"),
+          });
+          query.empresa = { $in: empresas.map((e) => e._id) };
+        }
+      }
+
+      // Executar query
+      const vagas = await Vaga.find(query).populate("empresa").sort(sortBy);
+
       res.status(200).json({ vagas });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({
+        error: error.message,
+        details: "Erro ao buscar vagas",
+      });
     }
   }
 

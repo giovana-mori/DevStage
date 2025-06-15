@@ -26,10 +26,34 @@ export default class ArtigoController {
       return res.status(500).json({ message: "Erro ao criar artigo" });
     }
   }
-
+  
   static async getArtigos(req, res) {
-    const artigos = await Artigo.find().sort("-createdAt");
-    res.status(200).json({ artigos });
+    try {
+      const { search } = req.query;
+      let query = {};
+
+      if (search) {
+        const regex = new RegExp(search, "i"); // Busca case-insensitive
+
+        //Ele faz uma busca com OR, ele vai testando em cada coluna para ver se tem algo semelhante ao que foi digitado pelo usuario
+        query.$or = [
+          { titulo: { $regex: regex } },
+          { conteudo: { $regex: regex } },
+          { resumo: { $regex: regex } },
+          { categoria: { $regex: regex } },
+          { tags: { $regex: regex } },
+        ];
+      }
+
+      const artigos = await Artigo.find(query).sort("-createdAt");
+
+      res.status(200).json({ artigos });
+    } catch (error) {
+      res.status(500).json({
+        error: error.message,
+        details: "Erro ao buscar artigos",
+      });
+    }
   }
 
   static async getArtigoByTitulo(req, res) {
