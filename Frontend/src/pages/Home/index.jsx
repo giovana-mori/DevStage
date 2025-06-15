@@ -39,7 +39,7 @@ function Home() {
     <div className="flex-grow">
       <Header />
       {/* Hero Section */}
-      <section className="relative bg-purple-light overflow-hidden flex flex-col justify-between pt-20">
+      <section className="relative bg-purple-light overflow-hidden flex flex-col justify-between">
         <div className="container flex h-full items-center mx-auto px-4 sm:px-6 lg:px-8 py-12 md:pb-0 md:py-16 relative z-10">
           <div className="flex flex-col justify-between w-full gap-5 md:flex-row items-center">
             <div className="md:w-2/4 mb-10 md:mb-0 max-w-[500px]">
@@ -67,7 +67,7 @@ function Home() {
                 transition={{ duration: 1, delay: 0.2 }}
               >
                 <Link
-                  to="/cadastro"
+                  to="/registrar"
                   className="flex justify-center items-center relative text-sm font-light bg-purple-medium hover:text-white hover:bg-primary text-primary py-2 pl-1 px-5 w-full max-w-60 rounded-full transition-colors"
                 >
                   Cadastre-se Agora!
@@ -76,13 +76,13 @@ function Home() {
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
-                      stroke-width="2"
+                      strokeWidth="2"
                       stroke="currentColor"
-                      class="text-white"
+                      className="text-white"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="m8.25 4.5 7.5 7.5-7.5 7.5"
                       />
                     </svg>
@@ -237,7 +237,7 @@ function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/cadastro"
+              to="/registrar"
               className="bg-white text-primary hover:bg-gray-100 font-bold py-3 px-6 rounded-full transition-colors"
             >
               Cadastre-se Gratuitamente

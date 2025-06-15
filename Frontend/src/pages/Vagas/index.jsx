@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Header from "../../Component/Header";
 import api from "../../utils/api";
 import { VagaCard } from "../../Component/VagaCard";
 
 export default function Vagas() {
+  //check if exists params
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get("search"); // Pega o parametro Search, caso ele exista
   const [filtroModalidade, setFiltroModalidade] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroArea, setFiltroArea] = useState("");
@@ -17,7 +20,7 @@ export default function Vagas() {
   const itemsPerPage = 6;
 
   useEffect(() => {
-    api.get("/vagas").then((response) => {
+    api.get(`/vagas${query && "?search=" + query}`).then((response) => {
       debugger;
       const vagas = response.data.vagas.map((vaga) => {
         return {
@@ -43,6 +46,56 @@ export default function Vagas() {
   const handleSubmitSearch = (e) => {
     e.preventDefault();
     console.log("Buscar por:", searchTerm, "em", location);
+
+    api.get(`/vagas?search=${searchTerm}`).then((response) => {
+      debugger;
+      const vagas = response.data.vagas.map((vaga) => {
+        return {
+          id: vaga._id,
+          titulo: vaga.titulo,
+          empresa: vaga.empresa.nome || "Não informado",
+          logo: "https://placehold.co/80x80/EEE/31343C",
+          localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
+          tipo: vaga.modalidade,
+          data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }),
+          tags: vaga.requisitos,
+          descricao: vaga.descricao,
+        };
+      });
+      setVagas(vagas);
+    });
+  };
+
+  const clearFilter = () => {
+    setFiltroModalidade("");
+    setFiltroTipo("");
+    setFiltroArea("");
+    setSearchTerm("");
+    api.get("/vagas").then((response) => {
+      debugger;
+      const vagas = response.data.vagas.map((vaga) => {
+        return {
+          id: vaga._id,
+          titulo: vaga.titulo,
+          empresa: vaga.empresa.nome || "Não informado",
+          logo: "https://placehold.co/80x80/EEE/31343C",
+          localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
+          tipo: vaga.modalidade,
+          data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }),
+          tags: vaga.requisitos,
+          descricao: vaga.descricao,
+        };
+      });
+      setVagas(vagas);
+    });
   };
 
   // Filtrar vagas com base nos filtros selecionados
@@ -130,9 +183,10 @@ export default function Vagas() {
                 <input
                   type="text"
                   id="location"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-medium rounded-lg disabled:bg-gray-100 focus:ring-2 focus:ring-primary focus:border-primary"
                   placeholder="Localização"
                   value={location}
+                  disabled={true}
                   onChange={(e) => setLocation(e.target.value)}
                 />
               </div>
@@ -288,9 +342,7 @@ export default function Vagas() {
                 {/* Botão para limpar filtros */}
                 <button
                   onClick={() => {
-                    setFiltroModalidade("");
-                    setFiltroTipo("");
-                    setFiltroArea("");
+                    clearFilter();
                   }}
                   className="w-full py-2 px-4 border border-gray-medium rounded-lg text-gray-dark hover:bg-gray-light transition-colors text-sm"
                 >
@@ -392,9 +444,7 @@ export default function Vagas() {
                   </p>
                   <button
                     onClick={() => {
-                      setFiltroModalidade("");
-                      setFiltroTipo("");
-                      setFiltroArea("");
+                      clearFilter();
                     }}
                     className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                   >
@@ -419,7 +469,7 @@ export default function Vagas() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/cadastro"
+              to="/registrar"
               className="bg-white text-primary hover:bg-gray-100 font-bold py-3 px-6 rounded-full transition-colors"
             >
               Cadastre-se Gratuitamente

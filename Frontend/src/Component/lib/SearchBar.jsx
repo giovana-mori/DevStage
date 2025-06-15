@@ -1,28 +1,36 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
 export default function SearchBar() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [location, setLocation] = useState("Brasil")
+  const [searchTerm, setSearchTerm] = useState("");
+  const [location, setLocation] = useState("");
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    // Aqui seria implementada a lógica de busca
-    console.log("Buscar por:", searchTerm, "em", location)
-  }
+    e.preventDefault();
+
+    const params = new URLSearchParams();
+    if (searchTerm) params.append("search", searchTerm);
+    if (location) params.append("location", location);
+
+    window.location.href = `/vagas?${params.toString()}`;
+  };
 
   return (
     <div className="w-full bg-primary py-6 px-4">
       <div className="container mx-auto">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+        <div className="flex flex-col lg:flex-row items-start md:items-center  justify-between gap-4">
           <div className="text-white">
             <h3 className="text-xl font-bold">Que vaga você procura?</h3>
-            <p className="text-sm text-white/80">Exemplo: desenvolvedor PHP junior</p>
+            <p className="text-sm text-white/80">
+              Exemplo: desenvolvedor PHP junior
+            </p>
           </div>
-
-          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-2 w-full md:max-w-3xl">
-            <div className="relative flex-1">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col lg:flex-row w-full justify-between max-w-6xl gap-4"
+          >
+            <div className="relative flex-1 w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
                   className="h-5 w-5 text-gray-500"
@@ -48,7 +56,7 @@ export default function SearchBar() {
               />
             </div>
 
-            <div className="relative flex-1">
+            <div className="relative flex-1 w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
                   className="h-5 w-5 text-gray-500"
@@ -84,5 +92,5 @@ export default function SearchBar() {
         </div>
       </div>
     </div>
-  )
+  );
 }

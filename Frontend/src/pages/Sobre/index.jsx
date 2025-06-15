@@ -355,7 +355,7 @@ export default function Sobre() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/cadastro"
+              to="/registrar"
               className="bg-white text-primary hover:bg-gray-100 font-bold py-3 px-6 rounded-full transition-colors"
             >
               Cadastre-se Gratuitamente
