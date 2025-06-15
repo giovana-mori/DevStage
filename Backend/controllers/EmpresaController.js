@@ -26,16 +26,36 @@ export default class EmpresaController {
       return res.status(500).json({ message: "Erro ao criar empresa" });
     }
   }
-
   static async getEmpresas(req, res) {
     try {
-      const empresas = await Empresa.find().populate({
+      const { search } = req.query;
+
+      // Construir query dinâmica
+      const query = {};
+
+      if (search) {
+        const regex = new RegExp(search, "i");
+
+        query.$or = [
+          { nome: { $regex: regex } },
+          { descricao: { $regex: regex } },
+          { setor: { $regex: regex } },
+          { localizacao: { $regex: regex } },
+          { email_contato: { $regex: regex } },
+        ];
+      }
+
+      const empresas = await Empresa.find(query).populate({
         path: "vagas",
-        model: "Vaga", // Especifica o modelo a ser populado
+        model: "Vaga",
       });
+
       res.status(200).json({ empresas });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({
+        error: error.message,
+        details: "Erro ao buscar empresas",
+      });
     }
   }
 
@@ -46,7 +66,7 @@ export default class EmpresaController {
         .status(422)
         .json({ message: "Nome da empresa obrigatório na busca" });
     }
-    const empresa = await Empresa.find({ nome }).sort("-createdAt");
+    const empresa = await Empresa.findOne({ nome }).sort("-createdAt");
     if (!empresa || empresa.length === 0) {
       return res.status(404).json({ message: "Empresa não encontrada" });
     }
