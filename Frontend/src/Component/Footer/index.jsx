@@ -16,7 +16,7 @@ function Footer() {
                 />
               </div>
             </Link>
-            <p className="mt-2 text-sm text-gray-dark">
+            <p className="mt-2 text-sm text-gray-dark lg:max-w-56">
               Conectando estudantes às melhores oportunidades de estágio em
               desenvolvimento de software.
             </p>

@@ -2,6 +2,8 @@
 
 import { Link } from "react-router-dom";
 import AdminHeader from "../../../Component/AdminHeader";
+import { useEffect, useState } from "react";
+import api from "../../../utils/api";
 
 // Dados de exemplo para a tabela de vagas
 const vagasExemplo = [
@@ -53,6 +55,43 @@ const vagasExemplo = [
 ];
 
 export default function AdminDashboard() {
+  const [vagas, setVagas] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  useEffect(() => {
+    api.get("/vagas").then((response) => {
+      const vagasData = response.data.vagas.map((vaga) => {
+        return {
+          id: vaga._id,
+          titulo: vaga.titulo,
+          empresa: vaga.empresa.nome || "Não informado",
+          logo: "https://placehold.co/80x80/EEE/31343C",
+          localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
+          tipo: vaga.modalidade,
+          data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }),
+          tags: vaga.requisitos,
+          descricao: vaga.descricao,
+        };
+      });
+      setVagas(vagasData);
+    });
+  }, []);
+
+  // Paginação
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = vagas.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(vagas.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div className="min-h-screen bg-gray-light">
       <AdminHeader activeTab="dashboard" />
@@ -89,7 +128,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-sm text-gray-dark">Total de Vagas</p>
-                <h3 className="text-2xl font-bold text-gray-dark">42</h3>
+                <h3 className="text-2xl font-bold text-gray-dark">{vagas.length}</h3>
               </div>
             </div>
             <div className="mt-4">
@@ -332,7 +371,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-medium">
-                {vagasExemplo.map((vaga) => (
+                {vagas.map((vaga) => (
                   <tr key={vaga.id} className="hover:bg-gray-light">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-dark">
@@ -407,9 +446,15 @@ export default function AdminDashboard() {
 
           <div className="px-6 py-4 flex justify-between items-center border-t border-gray-medium">
             <div className="text-sm text-gray-dark">
-              Mostrando <span className="font-medium">1</span> a{" "}
-              <span className="font-medium">5</span> de{" "}
-              <span className="font-medium">42</span> resultados
+              Mostrando{" "}
+              <span className="font-medium">{indexOfFirstItem + 1}</span> a{" "}
+              <span className="font-medium">
+                {indexOfLastItem > vagas.length
+                  ? vagas.length
+                  : indexOfLastItem}
+              </span>{" "}
+              de <span className="font-medium">{vagas.length}</span>{" "}
+              resultados
             </div>
             <div className="flex space-x-2">
               <button className="px-3 py-1 border border-gray-medium rounded-md text-sm text-gray-dark hover:bg-gray-light">

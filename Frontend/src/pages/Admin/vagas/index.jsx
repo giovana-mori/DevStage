@@ -35,8 +35,6 @@ export default function AdminVagas() {
     });
   }, []);
 
-  debugger
-
   // Filtrar vagas com base na pesquisa e no filtro de status
   const filteredVagas = vagas.filter(
     (vaga) => 

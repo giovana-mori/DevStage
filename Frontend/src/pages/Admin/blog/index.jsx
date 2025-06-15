@@ -1,113 +1,61 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import AdminHeader from "../../../Component/AdminHeader"
-import { Link } from "react-router-dom"
-
-// Dados de exemplo para a tabela de posts do blog
-const blogPostsExemplo = [
-  {
-    id: 1,
-    titulo: "Como se preparar para entrevistas técnicas de estágio",
-    categoria: "Carreira",
-    autor: "Ana Rodrigues",
-    data: "15/05/2023",
-    status: "Publicado",
-    visualizacoes: 1245,
-  },
-  {
-    id: 2,
-    titulo: "Tecnologias mais requisitadas para estágios em 2023",
-    categoria: "Tecnologia",
-    autor: "Carlos Mendes",
-    data: "02/05/2023",
-    status: "Publicado",
-    visualizacoes: 987,
-  },
-  {
-    id: 3,
-    titulo: "Como montar um portfólio de projetos para estágio",
-    categoria: "Portfólio",
-    autor: "Mariana Costa",
-    data: "25/04/2023",
-    status: "Publicado",
-    visualizacoes: 756,
-  },
-  {
-    id: 4,
-    titulo: "Dicas para equilibrar estágio e faculdade",
-    categoria: "Produtividade",
-    autor: "Pedro Alves",
-    data: "18/04/2023",
-    status: "Publicado",
-    visualizacoes: 543,
-  },
-  {
-    id: 5,
-    titulo: "O que as empresas buscam em estagiários de desenvolvimento?",
-    categoria: "Carreira",
-    autor: "Juliana Martins",
-    data: "10/04/2023",
-    status: "Publicado",
-    visualizacoes: 890,
-  },
-  {
-    id: 6,
-    titulo: "Como criar um currículo eficiente para vagas de estágio",
-    categoria: "Currículo",
-    autor: "Roberto Almeida",
-    data: "05/04/2023",
-    status: "Publicado",
-    visualizacoes: 678,
-  },
-  {
-    id: 7,
-    titulo: "Frameworks JavaScript para aprender em 2023",
-    categoria: "Tecnologia",
-    autor: "Carlos Mendes",
-    data: "28/03/2023",
-    status: "Rascunho",
-    visualizacoes: 0,
-  },
-  {
-    id: 8,
-    titulo: "Como se destacar em processos seletivos para estágio",
-    categoria: "Carreira",
-    autor: "Ana Rodrigues",
-    data: "20/03/2023",
-    status: "Agendado",
-    visualizacoes: 0,
-  },
-]
+import { useEffect, useState } from "react";
+import AdminHeader from "../../../Component/AdminHeader";
+import { Link } from "react-router-dom";
+import api from "../../../utils/api";
 
 export default function AdminBlog() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [categoriaFilter, setCategoriaFilter] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoriaFilter, setCategoriaFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const [artigos, setArtigos] = useState([]);
+
+  useEffect(() => {
+    api.get("/artigos").then((response) => {
+      const artigosData = response.data.artigos.map((artigo) => {
+        return {
+          id: artigo._id,
+          titulo: artigo.titulo,
+          categoria: artigo.categoria,
+          autor: artigo.autor,
+          data: new Date(artigo.createdAt).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }),
+          status: artigo.status,
+        };
+      });
+      setArtigos(artigosData);
+    });
+  }, []);
 
   // Filtrar posts com base na pesquisa e nos filtros
-  const filteredPosts = blogPostsExemplo.filter(
+  const filteredPosts = artigos.filter(
     (post) =>
       (post.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.autor.toLowerCase().includes(searchTerm.toLowerCase())) &&
       (categoriaFilter === "" || post.categoria === categoriaFilter) &&
-      (statusFilter === "" || post.status === statusFilter),
-  )
+      (statusFilter === "" || post.status === statusFilter)
+  );
 
   // Paginação
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = filteredPosts.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredPosts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
 
   const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber)
-  }
+    setCurrentPage(pageNumber);
+  };
 
   // Obter categorias únicas para o filtro
-  const categorias = [...new Set(blogPostsExemplo.map((post) => post.categoria))]
+  const categorias = [
+    ...new Set(artigos.map((post) => post.categoria)),
+  ];
 
   return (
     <div className="min-h-screen bg-gray-light">
@@ -115,8 +63,12 @@ export default function AdminBlog() {
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-dark">Gerenciamento do Blog</h1>
-          <p className="text-gray-dark">Gerencie todos os artigos do blog da plataforma DevStage.</p>
+          <h1 className="text-2xl font-bold text-gray-dark">
+            Gerenciamento do Blog
+          </h1>
+          <p className="text-gray-dark">
+            Gerencie todos os artigos do blog da plataforma DevStage.
+          </p>
         </div>
 
         {/* Filtros e busca */}
@@ -229,12 +181,6 @@ export default function AdminBlog() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-dark uppercase tracking-wider"
                   >
-                    Visualizações
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-dark uppercase tracking-wider"
-                  >
                     Status
                   </th>
                   <th
@@ -250,7 +196,9 @@ export default function AdminBlog() {
                   currentItems.map((post) => (
                     <tr key={post.id} className="hover:bg-gray-light">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-dark">{post.titulo}</div>
+                        <div className="text-sm font-medium text-gray-dark">
+                          {post.titulo}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary/10 text-primary">
@@ -258,22 +206,23 @@ export default function AdminBlog() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-dark">{post.autor}</div>
+                        <div className="text-sm text-gray-dark">
+                          {post.autor}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-dark">{post.data}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-dark">{post.visualizacoes.toLocaleString()}</div>
+                        <div className="text-sm text-gray-dark">
+                          {post.data}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            post.status === "Publicado"
+                            post.status.toLowerCase() === "publicado"
                               ? "bg-green-100 text-green-800"
                               : post.status === "Rascunho"
-                                ? "bg-gray-100 text-gray-800"
-                                : "bg-yellow-100 text-yellow-800"
+                              ? "bg-gray-100 text-gray-800"
+                              : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
                           {post.status}
@@ -281,7 +230,10 @@ export default function AdminBlog() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <Link to={`/admin/blog/${post.id}`} className="text-primary hover:text-primary-dark">
+                          <Link
+                            to={`/admin/blog/${post.id}`}
+                            className="text-primary hover:text-primary-dark"
+                          >
                             <svg
                               className="w-5 h-5"
                               xmlns="http://www.w3.org/2000/svg"
@@ -291,7 +243,11 @@ export default function AdminBlog() {
                               <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                             </svg>
                           </Link>
-                          <Link to={`/blog/${post.id}`} target="_blank" className="text-blue-500 hover:text-blue-700">
+                          <Link
+                            to={`/blog/${post.id}`}
+                            target="_blank"
+                            className="text-blue-500 hover:text-blue-700"
+                          >
                             <svg
                               className="w-5 h-5"
                               xmlns="http://www.w3.org/2000/svg"
@@ -326,7 +282,10 @@ export default function AdminBlog() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center text-gray-dark">
+                    <td
+                      colSpan="7"
+                      className="px-6 py-4 text-center text-gray-dark"
+                    >
                       Nenhum artigo encontrado com os filtros aplicados.
                     </td>
                   </tr>
@@ -338,11 +297,15 @@ export default function AdminBlog() {
           {/* Paginação */}
           <div className="px-6 py-4 flex justify-between items-center border-t border-gray-medium">
             <div className="text-sm text-gray-dark">
-              Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a{" "}
+              Mostrando{" "}
+              <span className="font-medium">{indexOfFirstItem + 1}</span> a{" "}
               <span className="font-medium">
-                {indexOfLastItem > filteredPosts.length ? filteredPosts.length : indexOfLastItem}
+                {indexOfLastItem > filteredPosts.length
+                  ? filteredPosts.length
+                  : indexOfLastItem}
               </span>{" "}
-              de <span className="font-medium">{filteredPosts.length}</span> resultados
+              de <span className="font-medium">{filteredPosts.length}</span>{" "}
+              resultados
             </div>
             <div className="flex space-x-2">
               <button
@@ -385,5 +348,5 @@ export default function AdminBlog() {
         </div>
       </main>
     </div>
-  )
+  );
 }

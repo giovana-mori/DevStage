@@ -1,125 +1,56 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import AdminHeader from "../../../Component/AdminHeader"
-import { Link } from "react-router-dom"
-
-// Dados de exemplo para a tabela de empresas
-const empresasExemplo = [
-  {
-    id: 1,
-    nome: "Acme Brasil",
-    setor: "Tecnologia",
-    localizacao: "São Paulo, SP",
-    site: "www.acmebrasil.com.br",
-    contato: "contato@acmebrasil.com.br",
-    vagasAtivas: 3,
-    status: "Ativa",
-    dataRegistro: "15/01/2023",
-  },
-  {
-    id: 2,
-    nome: "Tech Solutions",
-    setor: "Tecnologia",
-    localizacao: "Rio de Janeiro, RJ",
-    site: "www.techsolutions.com.br",
-    contato: "contato@techsolutions.com.br",
-    vagasAtivas: 2,
-    status: "Ativa",
-    dataRegistro: "20/02/2023",
-  },
-  {
-    id: 3,
-    nome: "Digital Innovations",
-    setor: "Tecnologia",
-    localizacao: "Belo Horizonte, MG",
-    site: "www.digitalinnovations.com.br",
-    contato: "contato@digitalinnovations.com.br",
-    vagasAtivas: 1,
-    status: "Ativa",
-    dataRegistro: "10/03/2023",
-  },
-  {
-    id: 4,
-    nome: "Creative Labs",
-    setor: "Design",
-    localizacao: "Curitiba, PR",
-    site: "www.creativelabs.com.br",
-    contato: "contato@creativelabs.com.br",
-    vagasAtivas: 1,
-    status: "Pendente",
-    dataRegistro: "05/04/2023",
-  },
-  {
-    id: 5,
-    nome: "Cloud Systems",
-    setor: "Tecnologia",
-    localizacao: "Porto Alegre, RS",
-    site: "www.cloudsystems.com.br",
-    contato: "contato@cloudsystems.com.br",
-    vagasAtivas: 0,
-    status: "Inativa",
-    dataRegistro: "25/02/2023",
-  },
-  {
-    id: 6,
-    nome: "Data Analytics",
-    setor: "Tecnologia",
-    localizacao: "Brasília, DF",
-    site: "www.dataanalytics.com.br",
-    contato: "contato@dataanalytics.com.br",
-    vagasAtivas: 2,
-    status: "Ativa",
-    dataRegistro: "12/03/2023",
-  },
-  {
-    id: 7,
-    nome: "Security Plus",
-    setor: "Segurança da Informação",
-    localizacao: "São Paulo, SP",
-    site: "www.securityplus.com.br",
-    contato: "contato@securityplus.com.br",
-    vagasAtivas: 1,
-    status: "Ativa",
-    dataRegistro: "18/03/2023",
-  },
-  {
-    id: 8,
-    nome: "Web Solutions",
-    setor: "Tecnologia",
-    localizacao: "Recife, PE",
-    site: "www.websolutions.com.br",
-    contato: "contato@websolutions.com.br",
-    vagasAtivas: 2,
-    status: "Pendente",
-    dataRegistro: "01/04/2023",
-  },
-]
+import { useEffect, useState } from "react";
+import AdminHeader from "../../../Component/AdminHeader";
+import { Link } from "react-router-dom";
+import api from "../../../utils/api";
 
 export default function AdminEmpresas() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const [empresas, setEmpresas] = useState([]);
+
+  useEffect(() => {
+    api.get("/empresas").then((response) => {
+      const empresasData = response.data.empresas.map((empresa) => {
+        return {
+          id: empresa._id,
+          nome: empresa.nome,
+          setor: empresa.setor,
+          localizacao: empresa.localizacao,
+          site: empresa.site,
+          contato: empresa.email_contato,
+          vagasCadastradas: empresa.vagas.length,
+          status: empresa.status
+        };
+      });
+      setEmpresas(empresasData);
+    });
+  }, []);
 
   // Filtrar empresas com base na pesquisa e no filtro de status
-  const filteredEmpresas = empresasExemplo.filter(
+  const filteredEmpresas = empresas.filter(
     (empresa) =>
       (empresa.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         empresa.setor.toLowerCase().includes(searchTerm.toLowerCase()) ||
         empresa.localizacao.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (statusFilter === "" || empresa.status === statusFilter),
-  )
+      (statusFilter === "" || empresa.status === statusFilter)
+  );
 
   // Paginação
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = filteredEmpresas.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(filteredEmpresas.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredEmpresas.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+  const totalPages = Math.ceil(filteredEmpresas.length / itemsPerPage);
 
   const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber)
-  }
+    setCurrentPage(pageNumber);
+  };
 
   return (
     <div className="min-h-screen bg-gray-light">
@@ -127,8 +58,13 @@ export default function AdminEmpresas() {
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-dark">Gerenciamento de Empresas</h1>
-          <p className="text-gray-dark">Gerencie todas as empresas parceiras cadastradas na plataforma DevStage.</p>
+          <h1 className="text-2xl font-bold text-gray-dark">
+            Gerenciamento de Empresas
+          </h1>
+          <p className="text-gray-dark">
+            Gerencie todas as empresas parceiras cadastradas na plataforma
+            DevStage.
+          </p>
         </div>
 
         {/* Filtros e busca */}
@@ -249,42 +185,58 @@ export default function AdminEmpresas() {
                   currentItems.map((empresa) => (
                     <tr key={empresa.id} className="hover:bg-gray-light">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-dark">{empresa.nome}</div>
-                        <div className="text-xs text-gray-500">Desde {empresa.dataRegistro}</div>
+                        <div className="text-sm font-medium text-gray-dark">
+                          {empresa.nome}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-dark">{empresa.setor}</div>
+                        <div className="text-sm text-gray-dark">
+                          {empresa.setor}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-dark">{empresa.localizacao}</div>
+                        <div className="text-sm text-gray-dark">
+                          {empresa.localizacao}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-dark">{empresa.contato}</div>
+                        <div className="text-sm text-gray-dark">
+                          {empresa.contato}
+                        </div>
                         <div className="text-xs text-blue-500 hover:underline">
-                          <a to={`https://${empresa.site}`} target="_blank" rel="noopener noreferrer">
+                          <a
+                            to={`https://${empresa.site}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             {empresa.site}
                           </a>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-dark">{empresa.vagasAtivas}</div>
+                        <div className="text-sm text-gray-dark">
+                          {empresa.vagasCadastradas}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            empresa.status === "Ativa"
+                            empresa.status.toLowerCase() === "ativa"
                               ? "bg-green-100 text-green-800"
                               : empresa.status === "Pendente"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
                           }`}
                         >
-                          {empresa.status}
+                          {empresa.status.toLowerCase()}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <Link to={`/admin/empresas/${empresa.id}`} className="text-primary hover:text-primary-dark">
+                          <Link
+                            to={`/admin/empresas/${empresa.id}`}
+                            className="text-primary hover:text-primary-dark"
+                          >
                             <svg
                               className="w-5 h-5"
                               xmlns="http://www.w3.org/2000/svg"
@@ -329,7 +281,10 @@ export default function AdminEmpresas() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center text-gray-dark">
+                    <td
+                      colSpan="7"
+                      className="px-6 py-4 text-center text-gray-dark"
+                    >
                       Nenhuma empresa encontrada com os filtros aplicados.
                     </td>
                   </tr>
@@ -341,11 +296,15 @@ export default function AdminEmpresas() {
           {/* Paginação */}
           <div className="px-6 py-4 flex justify-between items-center border-t border-gray-medium">
             <div className="text-sm text-gray-dark">
-              Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a{" "}
+              Mostrando{" "}
+              <span className="font-medium">{indexOfFirstItem + 1}</span> a{" "}
               <span className="font-medium">
-                {indexOfLastItem > filteredEmpresas.length ? filteredEmpresas.length : indexOfLastItem}
+                {indexOfLastItem > filteredEmpresas.length
+                  ? filteredEmpresas.length
+                  : indexOfLastItem}
               </span>{" "}
-              de <span className="font-medium">{filteredEmpresas.length}</span> resultados
+              de <span className="font-medium">{filteredEmpresas.length}</span>{" "}
+              resultados
             </div>
             <div className="flex space-x-2">
               <button
@@ -388,5 +347,5 @@ export default function AdminEmpresas() {
         </div>
       </main>
     </div>
-  )
+  );
 }

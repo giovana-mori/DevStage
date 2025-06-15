@@ -65,12 +65,10 @@ export default class ArtigoController {
         { new: true }
       );
 
-      return res
-        .status(200)
-        .json({
-          message: "Artigo atualizado com sucesso",
-          artigo: updatedArtigo,
-        });
+      return res.status(200).json({
+        message: "Artigo atualizado com sucesso",
+        artigo: updatedArtigo,
+      });
     } catch (error) {
       return res.status(500).json({ message: "Erro ao atualizar artigo" });
     }

@@ -14,7 +14,7 @@ export default function AdminHeader({ activeTab }) {
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <div className="flex-shrink-0 flex items-center">
-                        <Link to="/admin/dashboard" className="flex items-center">
+                        <Link to="/admin" className="flex items-center">
                             <div className="flex items-center">
                                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mr-2">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,7 +31,7 @@ export default function AdminHeader({ activeTab }) {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex space-x-8">
                         <Link
-                            to="/admin/dashboard"
+                            to="/admin"
                             className={`text-gray-dark hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === "dashboard" ? "border-b-2 border-primary text-primary" : ""
                                 }`}
                         >

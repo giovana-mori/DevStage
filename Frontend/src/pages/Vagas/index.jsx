@@ -2,205 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import SearchBar from "../../Component/lib/SearchBar";
 import Header from "../../Component/Header";
 import api from "../../utils/api";
-
-// Dados de exemplo para as vagas
-const vagasExemplo = [
-  {
-    id: 1,
-    titulo: "Estágio em Desenvolvimento Front-end",
-    empresa: "Acme Brasil",
-    logo: "/placeholder.svg?height=80&width=80",
-    localizacao: "São Paulo, SP (Remoto)",
-    tipo: "Estágio",
-    data: "10/05/2023",
-    tags: ["React", "JavaScript", "Tailwind"],
-    descricao:
-      "Estamos buscando um estagiário para atuar no desenvolvimento de interfaces web utilizando React e Tailwind CSS.",
-  },
-  {
-    id: 2,
-    titulo: "Estágio em Desenvolvimento Back-end",
-    empresa: "Tech Solutions",
-    logo: "/placeholder.svg?height=80&width=80",
-    localizacao: "Rio de Janeiro, RJ (Presencial)",
-    tipo: "Estágio",
-    data: "08/05/2023",
-    tags: ["Node.js", "Express", "MongoDB"],
-    descricao:
-      "Oportunidade para estudantes de TI para atuar no desenvolvimento de APIs e serviços utilizando Node.js e MongoDB.",
-  },
-  {
-    id: 3,
-    titulo: "Estágio em Desenvolvimento Mobile",
-    empresa: "Digital Innovations",
-    logo: "/placeholder.svg?height=80&width=80",
-    localizacao: "Belo Horizonte, MG (Híbrido)",
-    tipo: "Estágio",
-    data: "05/05/2023",
-    tags: ["React Native", "Flutter", "Firebase"],
-    descricao:
-      "Buscamos estudante para atuar no desenvolvimento de aplicativos móveis utilizando React Native e Firebase.",
-  },
-  {
-    id: 4,
-    titulo: "Estágio em UX/UI Design",
-    empresa: "Creative Labs",
-    logo: "/placeholder.svg?height=80&width=80",
-    localizacao: "Curitiba, PR (Remoto)",
-    tipo: "Estágio",
-    data: "03/05/2023",
-    tags: ["Figma", "Adobe XD", "UI/UX"],
-    descricao:
-      "Oportunidade para estudantes de Design ou áreas correlatas para atuar na criação de interfaces de usuário.",
-  },
-  {
-    id: 5,
-    titulo: "Estágio em DevOps",
-    empresa: "Cloud Systems",
-    logo: "/placeholder.svg?height=80&width=80",
-    localizacao: "Porto Alegre, RS (Presencial)",
-    tipo: "Estágio",
-    data: "01/05/2023",
-    tags: ["Docker", "Kubernetes", "AWS"],
-    descricao:
-      "Estamos buscando um estagiário para atuar na área de DevOps, com foco em automação e infraestrutura como código.",
-  },
-  {
-    id: 6,
-    titulo: "Estágio em Análise de Dados",
-    empresa: "Data Analytics",
-    logo: "/placeholder.svg?height=80&width=80",
-    localizacao: "Brasília, DF (Híbrido)",
-    tipo: "Estágio",
-    data: "28/04/2023",
-    tags: ["Python", "SQL", "Power BI"],
-    descricao:
-      "Oportunidade para estudantes de TI, Estatística ou áreas correlatas para atuar na análise de dados e criação de dashboards.",
-  },
-  {
-    id: 7,
-    titulo: "Estágio em Segurança da Informação",
-    empresa: "Security Plus",
-    logo: "/placeholder.svg?height=80&width=80",
-    localizacao: "São Paulo, SP (Presencial)",
-    tipo: "Estágio",
-    data: "25/04/2023",
-    tags: ["Segurança", "Pentest", "Redes"],
-    descricao:
-      "Buscamos estudante para atuar na área de segurança da informação, realizando testes de penetração e análise de vulnerabilidades.",
-  },
-  {
-    id: 8,
-    titulo: "Estágio em Desenvolvimento Full Stack",
-    empresa: "Web Solutions",
-    logo: "/placeholder.svg?height=80&width=80",
-    localizacao: "Recife, PE (Remoto)",
-    tipo: "Estágio",
-    data: "22/04/2023",
-    tags: ["JavaScript", "React", "Node.js"],
-    descricao:
-      "Oportunidade para estudantes de TI para atuar no desenvolvimento full stack utilizando JavaScript, React e Node.js.",
-  },
-];
-
-// Componente para exibir um card de vaga
-function VagaCard({ vaga }) {
-  debugger;
-  return (
-    <div className="bg-white rounded-xl shadow-soft hover:shadow-medium transition-shadow p-6 border border-gray-200">
-      <div className="flex items-center mb-4">
-        <div className="w-12 h-12 bg-gray-light rounded-lg flex items-center justify-center mr-4 overflow-hidden">
-          <img
-            src={vaga.logo || "https://placehold.co/60x60/EEE/31343C"}
-            alt={vaga.empresa.nome}
-            width={48}
-            height={48}
-            className="object-cover"
-          />
-        </div>
-        <div>
-          <h3 className="font-semibold text-gray-dark">{vaga.titulo}</h3>
-          <p className="text-sm text-gray-dark">{vaga.empresa.nome}</p>
-        </div>
-      </div>
-      <div className="mb-4">
-        <div className="flex items-center text-sm text-gray-dark mb-2">
-          <svg
-            className="w-4 h-4 mr-2 text-primary"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          {vaga.localizacao}
-        </div>
-        <div className="flex items-center text-sm text-gray-dark">
-          <svg
-            className="w-4 h-4 mr-2 text-primary"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          Publicada em {vaga.createdAt}
-        </div>
-      </div>
-      <p className="text-sm text-gray-dark mb-4 line-clamp-2">
-        {vaga.descricao}
-      </p>
-      <div className="flex flex-wrap gap-2 mb-4">
-        {vaga.tags.map((tag) => (
-          <span
-            key={tag}
-            className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-md"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-      <Link
-        to={`/vagas/${vaga.titulo}`}
-        className="block text-center bg-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors"
-      >
-        Ver Detalhes
-      </Link>
-    </div>
-  );
-}
+import { VagaCard } from "../../Component/VagaCard";
 
 export default function Vagas() {
   const [filtroModalidade, setFiltroModalidade] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroArea, setFiltroArea] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [vagas, SetVagas] = useState([]);
+  const [vagas, setVagas] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [location, setLocation] = useState("Brasil");
   const itemsPerPage = 6;
 
   useEffect(() => {
     api.get("/vagas").then((response) => {
+      debugger;
       const vagas = response.data.vagas.map((vaga) => {
         return {
           id: vaga._id,
@@ -218,9 +36,14 @@ export default function Vagas() {
           descricao: vaga.descricao,
         };
       });
-      SetVagas(vagas);
+      setVagas(vagas);
     });
   }, []);
+
+  const handleSubmitSearch = (e) => {
+    e.preventDefault();
+    console.log("Buscar por:", searchTerm, "em", location);
+  };
 
   // Filtrar vagas com base nos filtros selecionados
   const filteredVagas = vagas?.filter(
@@ -247,7 +70,83 @@ export default function Vagas() {
     <div className="flex-grow">
       <Header />
       {/* Hero Section com SearchBar */}
-      <SearchBar />
+
+      <div className="w-full bg-primary py-6 px-4">
+        <div className="container mx-auto">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+            <div className="text-white">
+              <h3 className="text-xl font-bold">Que vaga você procura?</h3>
+              <p className="text-sm text-white/80">
+                Exemplo: desenvolvedor PHP junior
+              </p>
+            </div>
+
+            <form
+              onSubmit={handleSubmitSearch}
+              className="flex flex-col md:flex-row gap-2 w-full md:max-w-3xl"
+            >
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg
+                    className="h-5 w-5 text-gray-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="search-term"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  placeholder="Descrição da Vaga"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg
+                    className="h-5 w-5 text-gray-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="location"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  placeholder="Localização"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full md:w-auto bg-white hover:bg-gray-100 text-primary font-medium py-3 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              >
+                Buscar
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
 
       {/* Conteúdo Principal */}
       <section className="py-12 bg-gray-light">

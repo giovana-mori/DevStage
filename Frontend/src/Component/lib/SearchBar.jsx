@@ -1,11 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Link } from "react-router-dom";
 
 export default function SearchBar() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [location, setLocation] = useState("")
+  const [location, setLocation] = useState("Brasil")
 
   const handleSubmit = (e) => {
     e.preventDefault()

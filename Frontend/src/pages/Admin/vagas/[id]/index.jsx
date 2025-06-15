@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminHeader from "../../../../Component/AdminHeader";
+import api from "../../../../utils/api";
+import useFlashMessage from "../../../../hooks/useFlashMessage.jsx";
+import EmpresaAsyncSelect from "../../components/EmpresaAsyncSelect.jsx";
 
 export default function AdminVagasForm() {
   const { id } = useParams();
   const isEditing = id !== undefined;
+  const { setFlashMessage } = useFlashMessage();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     titulo: isEditing ? "Estágio em Desenvolvimento Front-end" : "",
     empresa: isEditing ? "Acme Brasil" : "",
@@ -18,7 +23,6 @@ export default function AdminVagasForm() {
     nivel: isEditing ? "Júnior" : "",
     publicadoEm: isEditing ? new Date().toISOString().split("T")[0] : "",
     vagasDisponiveis: isEditing ? 3 : 1,
-    candidatos: isEditing ? 47 : 0,
     descricao: isEditing
       ? "Estamos buscando um estagiário para atuar no desenvolvimento de interfaces web utilizando React e Tailwind CSS."
       : "",
@@ -61,7 +65,9 @@ export default function AdminVagasForm() {
         ].join("\n")
       : "",
     email_contato: isEditing ? "rh@acmebrasil.com.br" : "",
-    link_candidatura: isEditing ? "https://acmebrasil.com.br/vagas/estagio-frontend" : "",
+    link_candidatura: isEditing
+      ? "https://acmebrasil.com.br/vagas/estagio-frontend"
+      : "",
   });
 
   const handleChange = (e) => {
@@ -69,18 +75,42 @@ export default function AdminVagasForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleArrayChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value.split("\n").filter((item) => item.trim() !== ""),
-    }));
+  const formatFormData = (data) => {
+    return {
+      ...data,
+      responsabilidades: data.responsabilidades
+        .split("\n")
+        .filter((item) => item.trim() !== ""),
+      requisitos: data.requisitos
+        .split("\n")
+        .filter((item) => item.trim() !== ""),
+      diferenciais: data.diferenciais
+        .split("\n")
+        .filter((item) => item.trim() !== ""),
+      beneficios: data.beneficios
+        .split("\n")
+        .filter((item) => item.trim() !== ""),
+      cultura: data.cultura.split("\n").filter((item) => item.trim() !== ""),
+    };
   };
 
   const handleSubmit = (e) => {
+    let msgText = "Cadastro realizado com sucesso";
+    let msgType = "success";
     e.preventDefault();
-    console.log("Dados do formulário:", formData);
-    alert("Vaga salva com sucesso!");
+    const formattedData = formatFormData(formData);
+    console.log("Dados formatados:", formattedData);
+    //if successs, show card message
+    // try {
+    //   const response = api.post("/vagas/CadastrarVaga", formattedData);
+    //   return response.data;
+    // } catch (error) {
+    //   msgText = error.response.data.message;
+    //   msgType = "error";
+    // } finally {
+    //   setFlashMessage(msgText, msgType);
+    //   navigate("/admin/vagas");
+    // }
   };
 
   return (
@@ -156,7 +186,7 @@ export default function AdminVagasForm() {
                 >
                   Nome da empresa <span className="text-red-500">*</span>
                 </label>
-                <input
+                {/* <input
                   type="text"
                   id="empresa"
                   name="empresa"
@@ -165,25 +195,13 @@ export default function AdminVagasForm() {
                   required
                   className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   placeholder="Ex: TechCorp Solutions"
-                />
-              </div>
-
-              {/* Logo da Empresa */}
-              <div>
-                <label
-                  htmlFor="logoEmpresa"
-                  className="block text-sm font-medium text-gray-dark mb-1"
-                >
-                  URL do Logo da Empresa
-                </label>
-                <input
-                  type="url"
-                  id="logoEmpresa"
-                  name="logoEmpresa"
-                  value={formData.logoEmpresa}
-                  onChange={handleChange}
-                  className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                  placeholder="Ex: /logo-empresa.png"
+                /> */}
+                <EmpresaAsyncSelect
+                  value={formData.empresa}
+                  onChange={(value) =>
+                    setFormData((prev) => ({ ...prev, empresa: value }))
+                  }
+                  required
                 />
               </div>
 
@@ -213,7 +231,7 @@ export default function AdminVagasForm() {
                   htmlFor="tipoContrato"
                   className="block text-sm font-medium text-gray-dark mb-1"
                 >
-                  Tipo de Contrato <span className="text-red-500">*</span>
+                  Tipo de Vaga <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="tipoContrato"
@@ -224,10 +242,8 @@ export default function AdminVagasForm() {
                   className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="">Selecione</option>
-                  <option value="CLT">CLT</option>
-                  <option value="PJ">PJ</option>
                   <option value="Estágio">Estágio</option>
-                  <option value="Freelance">Freelance</option>
+                  <option value="Freelance">Trainee</option>
                 </select>
               </div>
 
@@ -370,7 +386,7 @@ export default function AdminVagasForm() {
                   id="responsabilidades"
                   name="responsabilidades"
                   value={formData.responsabilidades}
-                  onChange={handleArrayChange}
+                  onChange={handleChange}
                   required
                   rows={5}
                   className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
@@ -391,7 +407,7 @@ export default function AdminVagasForm() {
                   id="requisitos"
                   name="requisitos"
                   value={formData.requisitos}
-                  onChange={handleArrayChange}
+                  onChange={handleChange}
                   required
                   rows={5}
                   className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
@@ -411,7 +427,7 @@ export default function AdminVagasForm() {
                   id="diferenciais"
                   name="diferenciais"
                   value={formData.diferenciais}
-                  onChange={handleArrayChange}
+                  onChange={handleChange}
                   rows={5}
                   className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   placeholder="Experiência com TypeScript..."
@@ -431,7 +447,7 @@ export default function AdminVagasForm() {
                   id="beneficios"
                   name="beneficios"
                   value={formData.beneficios}
-                  onChange={handleArrayChange}
+                  onChange={handleChange}
                   required
                   rows={5}
                   className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
@@ -471,7 +487,7 @@ export default function AdminVagasForm() {
                   id="cultura"
                   name="cultura"
                   value={formData.cultura}
-                  onChange={handleArrayChange}
+                  onChange={handleChange}
                   rows={5}
                   className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   placeholder="Ambiente colaborativo e inclusivo..."
