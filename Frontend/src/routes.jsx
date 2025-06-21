@@ -15,7 +15,7 @@ import AdminDashboard from "./pages/Admin/dashboard/index.jsx";
 import AdminVagas from "./pages/Admin/vagas/index.jsx";
 import AdminVagasForm from "./pages/Admin/vagas/[titulo]/index.jsx";
 import AdminEmpresas from "./pages/Admin/empresas/index.jsx";
-import AdminEmpresaForm from "./pages/Admin/empresas/[id]/index.jsx";
+import AdminEmpresaForm from "./pages/Admin/empresas/[titulo]/index.jsx";
 import AdminUsuarios from "./pages/Admin/usuarios/index.jsx";
 import AdminUsuarioForm from "./pages/Admin/usuarios/[id]/index.jsx";
 import AdminBlog from "./pages/Admin/blog/index.jsx";
@@ -43,8 +43,7 @@ function AppRoutes() {
             <Route path="/admin/vagas" element={<AdminVagas />} />
             <Route path="/admin/vagas/:titulo" element={<AdminVagasForm />} />
             <Route path="/admin/empresas" element={<AdminEmpresas />} />
-            <Route path="/admin/empresas/nova" element={<AdminEmpresaForm />} />
-            <Route path="/admin/empresas/:id" element={<AdminEmpresaForm />} />
+            <Route path="/admin/empresas/:titulo" element={<AdminEmpresaForm />} />
             <Route path="/admin/usuarios" element={<AdminUsuarios />} />
             <Route path="/admin/usuarios/novo" element={<AdminUsuarioForm />} />
             <Route path="/admin/usuarios/:id" element={<AdminUsuarioForm />} />

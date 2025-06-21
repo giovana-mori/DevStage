@@ -1,11 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
-import AdminHeader from "../../../../Component/AdminHeader"
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import AdminHeader from "../../../../Component/AdminHeader";
+import useFlashMessage from "../../../../hooks/useFlashMessage";
+import api from "../../../../utils/api";
 
 export default function AdminEmpresaForm({ id }) {
-  const isEditing = id !== "nova"
+  const { titulo } = useParams();
+  const isEditing = titulo !== "nova";
+  const { setFlashMessage } = useFlashMessage();
+  const navigate = useNavigate();
 
   // Estado inicial do formulário
   const [formData, setFormData] = useState({
@@ -13,102 +18,99 @@ export default function AdminEmpresaForm({ id }) {
     setor: "",
     localizacao: "",
     site: "",
-    contato: "",
+    email_contato: "",
     telefone: "",
+    cultura: "",
     descricao: "",
     logo: "",
     status: "Ativa",
-  })
+  });
 
-  const [errors, setErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
-  const [successMessage, setSuccessMessage] = useState("")
-
-  // Simular carregamento de dados para edição
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  // Simulação de dados da vaga
   useEffect(() => {
+    const carregarEmpresa = async () => {
+      setIsLoading(true);
+      // Simulação de API call
+      await api.get(`/empresas/${titulo}`).then((response) => {
+        //map first item from vaga
+        const { empresa } = response.data;
+
+        if (empresa) {
+          setFormData(empresa);
+        }
+
+        setIsLoading(false);
+      });
+    };
+
     if (isEditing) {
-      setIsLoading(true)
-      // Simulação de chamada à API para buscar dados da empresa
-      setTimeout(() => {
-        setFormData({
-          nome: "Acme Brasil",
-          setor: "Tecnologia",
-          localizacao: "São Paulo, SP",
-          site: "www.acmebrasil.com.br",
-          contato: "contato@acmebrasil.com.br",
-          telefone: "(11) 3456-7890",
-          descricao:
-            "Empresa líder em soluções tecnológicas para o mercado brasileiro, com foco em desenvolvimento de software e consultoria em TI.",
-          logo: "",
-          status: "Ativa",
-        })
-        setIsLoading(false)
-      }, 800)
+      carregarEmpresa();
+    } else {
+      setIsLoading(false);
     }
-  }, [isEditing])
+  }, [titulo]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Limpar erro do campo quando o usuário começa a digitar
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
 
-    if (!formData.nome.trim()) newErrors.nome = "Nome da empresa é obrigatório"
-    if (!formData.setor.trim()) newErrors.setor = "Setor é obrigatório"
-    if (!formData.localizacao.trim()) newErrors.localizacao = "Localização é obrigatória"
-    if (!formData.contato.trim()) newErrors.contato = "E-mail de contato é obrigatório"
-    else if (!/\S+@\S+\.\S+/.test(formData.contato)) newErrors.contato = "E-mail inválido"
+    if (!formData.nome.trim()) newErrors.nome = "Nome da empresa é obrigatório";
+    if (!formData.setor.trim()) newErrors.setor = "Setor é obrigatório";
+    if (!formData.localizacao.trim())
+      newErrors.localizacao = "Localização é obrigatória";
+    if (!formData.email_contato.trim())
+      newErrors.email_contato = "E-mail de contato é obrigatório";
+    else if (!/\S+@\S+\.\S+/.test(formData.email_contato))
+      newErrors.email_contato = "E-mail inválido";
 
-    if (formData.site.trim() && !/^(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(formData.site)) {
-      newErrors.site = "Site inválido"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setIsLoading(true)
-    setSuccessMessage("")
+    setIsLoading(true);
+    setSuccessMessage("");
 
+    let msgText = "Cadastro realizado com sucesso";
+    let msgType = "success";
     // Simulação de envio para API
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log(formData);
+      api.post(
+        `/empresas/${isEditing ? "EditarEmpresa/" + formData._id : "CadastrarEmpresa"}`,
+        formData
+      );
 
-      setSuccessMessage(isEditing ? "Empresa atualizada com sucesso!" : "Empresa cadastrada com sucesso!")
-
-      if (!isEditing) {
-        // Limpar formulário após cadastro bem-sucedido
-        setFormData({
-          nome: "",
-          setor: "",
-          localizacao: "",
-          site: "",
-          contato: "",
-          telefone: "",
-          descricao: "",
-          logo: "",
-          status: "Ativa",
-        })
-      }
+      setSuccessMessage(
+        isEditing
+          ? "Empresa atualizada com sucesso!"
+          : "Empresa cadastrada com sucesso!"
+      );
+      setFlashMessage(msgText, msgType);
+      navigate("/admin/empresas");
     } catch (error) {
-      console.error("Erro ao salvar empresa:", error)
-      setErrors({ submit: "Ocorreu um erro ao salvar. Tente novamente." })
+      console.error("Erro ao salvar empresa:", error);
+      setErrors({ submit: "Ocorreu um erro ao salvar. Tente novamente." });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-light">
@@ -117,8 +119,16 @@ export default function AdminEmpresaForm({ id }) {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center">
-            <Link to="/admin/empresas" className="text-primary hover:text-primary-dark mr-2">
-              <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <Link
+              to="/admin/empresas"
+              className="text-primary hover:text-primary-dark mr-2"
+            >
+              <svg
+                className="w-5 h-5"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
                 <path
                   fillRule="evenodd"
                   d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
@@ -146,7 +156,14 @@ export default function AdminEmpresaForm({ id }) {
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -162,7 +179,11 @@ export default function AdminEmpresaForm({ id }) {
               <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                    <svg
+                      className="h-5 w-5 text-green-500"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -181,7 +202,10 @@ export default function AdminEmpresaForm({ id }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Nome da empresa */}
                 <div>
-                  <label htmlFor="nome" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="nome"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Nome da empresa <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -195,12 +219,17 @@ export default function AdminEmpresaForm({ id }) {
                     } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                     placeholder="Ex: Acme Brasil"
                   />
-                  {errors.nome && <p className="mt-1 text-sm text-red-500">{errors.nome}</p>}
+                  {errors.nome && (
+                    <p className="mt-1 text-sm text-red-500">{errors.nome}</p>
+                  )}
                 </div>
 
                 {/* Setor */}
                 <div>
-                  <label htmlFor="setor" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="setor"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Setor <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -214,12 +243,17 @@ export default function AdminEmpresaForm({ id }) {
                     } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                     placeholder="Ex: Tecnologia, Saúde, Educação"
                   />
-                  {errors.setor && <p className="mt-1 text-sm text-red-500">{errors.setor}</p>}
+                  {errors.setor && (
+                    <p className="mt-1 text-sm text-red-500">{errors.setor}</p>
+                  )}
                 </div>
 
                 {/* Localização */}
                 <div>
-                  <label htmlFor="localizacao" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="localizacao"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Localização <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -229,16 +263,25 @@ export default function AdminEmpresaForm({ id }) {
                     value={formData.localizacao}
                     onChange={handleChange}
                     className={`block w-full px-3 py-2 border ${
-                      errors.localizacao ? "border-red-500" : "border-gray-medium"
+                      errors.localizacao
+                        ? "border-red-500"
+                        : "border-gray-medium"
                     } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                     placeholder="Ex: São Paulo, SP"
                   />
-                  {errors.localizacao && <p className="mt-1 text-sm text-red-500">{errors.localizacao}</p>}
+                  {errors.localizacao && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.localizacao}
+                    </p>
+                  )}
                 </div>
 
                 {/* Site */}
                 <div>
-                  <label htmlFor="site" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="site"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Site
                   </label>
                   <input
@@ -252,31 +295,45 @@ export default function AdminEmpresaForm({ id }) {
                     } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                     placeholder="Ex: www.empresa.com.br"
                   />
-                  {errors.site && <p className="mt-1 text-sm text-red-500">{errors.site}</p>}
+                  {errors.site && (
+                    <p className="mt-1 text-sm text-red-500">{errors.site}</p>
+                  )}
                 </div>
 
                 {/* E-mail de contato */}
                 <div>
-                  <label htmlFor="contato" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="contato"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     E-mail de contato <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
-                    id="contato"
-                    name="contato"
-                    value={formData.contato}
+                    id="email_contato"
+                    name="email_contato"
+                    value={formData.email_contato}
                     onChange={handleChange}
                     className={`block w-full px-3 py-2 border ${
-                      errors.contato ? "border-red-500" : "border-gray-medium"
+                      errors.email_contato
+                        ? "border-red-500"
+                        : "border-gray-medium"
                     } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                     placeholder="Ex: contato@empresa.com.br"
                   />
-                  {errors.contato && <p className="mt-1 text-sm text-red-500">{errors.contato}</p>}
+                  {errors.email_contato && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.email_contato}
+                    </p>
+                  )}
                 </div>
 
                 {/* Telefone */}
                 <div>
-                  <label htmlFor="telefone" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="telefone"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Telefone
                   </label>
                   <input
@@ -290,12 +347,19 @@ export default function AdminEmpresaForm({ id }) {
                     } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                     placeholder="Ex: (11) 3456-7890"
                   />
-                  {errors.telefone && <p className="mt-1 text-sm text-red-500">{errors.telefone}</p>}
+                  {errors.telefone && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.telefone}
+                    </p>
+                  )}
                 </div>
 
                 {/* Status */}
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="status"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Status <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -313,7 +377,10 @@ export default function AdminEmpresaForm({ id }) {
 
                 {/* Logo */}
                 <div>
-                  <label htmlFor="logo" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="logo"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Logo da empresa
                   </label>
                   <input
@@ -323,12 +390,17 @@ export default function AdminEmpresaForm({ id }) {
                     accept="image/*"
                     className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   />
-                  <p className="mt-1 text-xs text-gray-500">Formatos aceitos: JPG, PNG. Tamanho máximo: 2MB</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Formatos aceitos: JPG, PNG. Tamanho máximo: 2MB
+                  </p>
                 </div>
 
                 {/* Descrição */}
                 <div className="col-span-1 md:col-span-2">
-                  <label htmlFor="descricao" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="descricao"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Descrição da empresa
                   </label>
                   <textarea
@@ -336,6 +408,25 @@ export default function AdminEmpresaForm({ id }) {
                     name="descricao"
                     rows="4"
                     value={formData.descricao}
+                    onChange={handleChange}
+                    className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                    placeholder="Descreva brevemente a empresa, sua área de atuação e diferenciais..."
+                  ></textarea>
+                </div>
+
+                {/* Cultura */}
+                <div className="col-span-1 md:col-span-2">
+                  <label
+                    htmlFor="descricao"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
+                    Cultura da empresa
+                  </label>
+                  <textarea
+                    id="cultura"
+                    name="cultura"
+                    rows="4"
+                    value={formData.cultura}
                     onChange={handleChange}
                     className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                     placeholder="Descreva brevemente a empresa, sua área de atuação e diferenciais..."
@@ -391,5 +482,5 @@ export default function AdminEmpresaForm({ id }) {
         )}
       </main>
     </div>
-  )
+  );
 }

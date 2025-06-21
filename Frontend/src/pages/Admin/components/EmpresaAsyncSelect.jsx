@@ -23,7 +23,7 @@ const EmpresaAsyncSelect = ({
       debugger;
       try {
         setIsLoading(true);
-        const res = await api.get(`/empresas/${inputValue}`);
+        const res = await api.get(`/empresas/?search=${inputValue}`);
         const options = res.data.empresas.map((e) => ({
           value: e._id,
           label: e.nome,
@@ -45,14 +45,14 @@ const EmpresaAsyncSelect = ({
       const loadSelectedEmpresa = async () => {
         try {
           setIsLoading(true);
-          const res = await api.get(`/empresas/${value}`);
-          setEmpresaOptions([
-            {
-              value: res.data._id,
-              label: res.data.nome,
-              ...res.data,
-            },
-          ]);
+          const res = await api.get(`/empresas/?search=${value}`);
+          setEmpresaOptions(
+            res.data.empresas.map((e) => ({
+              value: e._id,
+              label: e.nome,
+              ...e,
+            }))
+          );
         } catch (error) {
           console.error("Erro ao carregar empresa:", error);
         } finally {
@@ -63,13 +63,11 @@ const EmpresaAsyncSelect = ({
     }
   }, [defaultValue]);
 
-  debugger;
   return (
     <div className={className}>
       <AsyncSelect
         name={name}
         cacheOptions
-        defaultInputValue={value || ""}
         loadOptions={loadEmpresas}
         defaultOptions={empresaOptions}
         value={empresaOptions.find((opt) => opt.value === value)}

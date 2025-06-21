@@ -234,7 +234,7 @@ export default function AdminEmpresas() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <Link
-                            to={`/admin/empresas/${empresa.id}`}
+                            to={`/admin/empresas/${empresa.nome}`}
                             className="text-primary hover:text-primary-dark"
                           >
                             <svg

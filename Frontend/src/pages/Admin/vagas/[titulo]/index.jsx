@@ -55,16 +55,6 @@ export default function AdminVagasForm() {
           "Auxílio home office",
         ].join("\n")
       : "",
-    sobreEmpresa: isEditing
-      ? "Nossa empresa é líder no mercado de tecnologia com mais de 10 anos de experiência."
-      : "",
-    cultura: isEditing
-      ? [
-          "Ambiente colaborativo",
-          "Foco no desenvolvimento",
-          "Flexibilidade",
-        ].join("\n")
-      : "",
     email_contato: isEditing ? "rh@acmebrasil.com.br" : "",
     link_candidatura: isEditing
       ? "https://acmebrasil.com.br/vagas/estagio-frontend"
@@ -85,7 +75,6 @@ export default function AdminVagasForm() {
           vaga.requisitos = vaga.requisitos?.join("\n");
           vaga.diferenciais = vaga.diferenciais?.join("\n");
           vaga.beneficios = vaga.beneficios?.join("\n");
-          vaga.cultura = vaga.cultura?.join("\n");
           vaga.publicadoEm = vaga.publicadoEm?.split("T")[0];
           vaga.empresa = vaga.empresa?._id;
           setFormData(vaga);
@@ -111,18 +100,17 @@ export default function AdminVagasForm() {
     return {
       ...data,
       responsabilidades: data.responsabilidades
-        .split("\n")
+        ?.split("\n")
         .filter((item) => item.trim() !== ""),
       requisitos: data.requisitos
-        .split("\n")
+        ?.split("\n")
         .filter((item) => item.trim() !== ""),
       diferenciais: data.diferenciais
-        .split("\n")
+        ?.split("\n")
         .filter((item) => item.trim() !== ""),
       beneficios: data.beneficios
-        .split("\n")
+        ?.split("\n")
         .filter((item) => item.trim() !== ""),
-      cultura: data.cultura.split("\n").filter((item) => item.trim() !== ""),
     };
   };
 
@@ -134,7 +122,10 @@ export default function AdminVagasForm() {
     console.log("Dados formatados:", formattedData);
     //if successs, show card message
     try {
-      const response = api.post("/vagas/CadastrarVaga", formattedData);
+      const response = api.post(
+        `/vagas/${isEditing ? "EditarVaga/" + formData._id : "CadastrarVaga"}`,
+        formattedData
+      );
       return response.data;
     } catch (error) {
       msgText = error.response.data.message;
@@ -496,45 +487,6 @@ export default function AdminVagasForm() {
                   rows={5}
                   className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   placeholder="Plano de saúde e odontológico..."
-                ></textarea>
-              </div>
-
-              {/* Sobre a Empresa */}
-              <div className="col-span-1 md:col-span-2">
-                <label
-                  htmlFor="sobreEmpresa"
-                  className="block text-sm font-medium text-gray-dark mb-1"
-                >
-                  Sobre a Empresa <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="sobreEmpresa"
-                  name="sobreEmpresa"
-                  value={formData.sobreEmpresa}
-                  onChange={handleChange}
-                  required
-                  rows={5}
-                  className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                  placeholder="Descreva a empresa e sua cultura..."
-                ></textarea>
-              </div>
-
-              {/* Cultura */}
-              <div className="col-span-1 md:col-span-2">
-                <label
-                  htmlFor="cultura"
-                  className="block text-sm font-medium text-gray-dark mb-1"
-                >
-                  Cultura da Empresa (uma por linha)
-                </label>
-                <textarea
-                  id="cultura"
-                  name="cultura"
-                  value={formData.cultura}
-                  onChange={handleChange}
-                  rows={5}
-                  className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                  placeholder="Ambiente colaborativo e inclusivo..."
                 ></textarea>
               </div>
 
