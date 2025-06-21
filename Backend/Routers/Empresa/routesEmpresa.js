@@ -2,6 +2,7 @@ import { Router } from "express";
 import EmpresaController from "../../controllers/EmpresaController.js";
 
 const routesEmpresa = Router();
+
 routesEmpresa.post('/CadastrarEmpresa', EmpresaController.createEmpresa);
 routesEmpresa.get('/', EmpresaController.getEmpresas);
 routesEmpresa.get('/:nome', EmpresaController.getEmpresaByNome);
