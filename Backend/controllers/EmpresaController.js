@@ -26,35 +26,34 @@ export default class EmpresaController {
       return res.status(500).json({ message: "Erro ao criar empresa" });
     }
   }
+  
   static async getEmpresas(req, res) {
     try {
-      const { search } = req.query;
+      const { search, sortBy = "-createdAt" } = req.query;
 
       // Construir query dinâmica
       const query = {};
 
+      // Busca textual (case-insensitive)
       if (search) {
         const regex = new RegExp(search, "i");
-
         query.$or = [
           { nome: { $regex: regex } },
-          { descricao: { $regex: regex } },
-          { setor: { $regex: regex } },
           { localizacao: { $regex: regex } },
-          { email_contato: { $regex: regex } },
+          { site: { $regex: regex } },
         ];
       }
 
-      const empresas = await Empresa.find(query).populate({
-        path: "vagas",
-        model: "Vaga",
-      });
+      // Executar query
+      const empresas = await Empresa.find(query)
+        .populate("empresa")
+        .sort(sortBy);
 
       res.status(200).json({ empresas });
     } catch (error) {
       res.status(500).json({
-        error: error.message,
-        details: "Erro ao buscar empresas",
+        message: error.message,
+        details: "Erro ao buscar Empresas",
       });
     }
   }
