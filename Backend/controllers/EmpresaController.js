@@ -1,4 +1,5 @@
 import Empresa from "../models/Empresa.js";
+import mongoose from "../db/conn.js";
 
 export default class EmpresaController {
   static async createEmpresa(req, res) {
@@ -26,25 +27,27 @@ export default class EmpresaController {
       return res.status(500).json({ message: "Erro ao criar empresa" });
     }
   }
-  
   static async getEmpresas(req, res) {
     try {
       const { search, sortBy = "-createdAt" } = req.query;
-
-      // Construir query dinâmica
       const query = {};
 
-      // Busca textual (case-insensitive)
       if (search) {
-        const regex = new RegExp(search, "i");
-        query.$or = [
-          { nome: { $regex: regex } },
-          { localizacao: { $regex: regex } },
-          { site: { $regex: regex } },
-        ];
+        // Verifica se a busca é um ObjectId válido
+        if (mongoose.Types.ObjectId.isValid(search)) {
+          // Busca EXCLUSIVAMENTE por ID se for válido
+          query._id = search;
+        } else {
+          // Busca textual nos outros campos
+          const regex = new RegExp(search, "i");
+          query.$or = [
+            { nome: { $regex: regex } },
+            { localizacao: { $regex: regex } },
+            { site: { $regex: regex } },
+          ];
+        }
       }
 
-      // Executar query
       const empresas = await Empresa.find(query)
         .populate("empresa")
         .sort(sortBy);
