@@ -99,7 +99,7 @@ export default class VagaController {
       if (!titulo) {
         return res.status(422).json({ message: "Nome da vaga obrigatório" });
       }
-      const vaga = await Vaga.findOne({ titulo }).sort("-createdAt");
+      const vaga = await Vaga.findOne({ titulo }).populate("empresa").sort("-createdAt");
       if (!vaga || vaga.length === 0) {
         return res.status(404).json({ message: "Vaga não encontrada" });
       }
