@@ -36,73 +36,12 @@ export default function DetalhesVaga() {
       debugger;
       // Simulação de API call
       await api.get(`/vagas/${titulo}`).then((response) => {
-        //map first item from vaga 
+        //map first item from vaga
 
-        const vagas = response.data.vaga.map((vaga) => {
-          return {
-            id: 1,
-            titulo: "Desenvolvedor Full Stack Júnior",
-            empresa: "TechCorp Solutions",
-            logoEmpresa: "/placeholder.svg?height=80&width=80",
-            localizacao: "São Paulo, SP",
-            tipoContrato: "CLT",
-            modalidade: "Híbrido",
-            salario: "R$ 4.500 - R$ 6.500",
-            nivel: "Júnior",
-            publicadoEm: "2024-01-10",
-            vagasDisponiveis: 3,
-            candidatos: 47,
-            descricao: `Estamos procurando um Desenvolvedor Full Stack Júnior para se juntar à nossa equipe inovadora. 
-        
-Você trabalhará em projetos desafiadores, desenvolvendo aplicações web modernas e escaláveis. Nossa empresa valoriza o crescimento profissional e oferece um ambiente colaborativo para você evoluir sua carreira.`,
+        const { vaga } = response.data;
 
-            responsabilidades: [
-              "Desenvolver e manter aplicações web usando React e Node.js",
-              "Colaborar com designers para implementar interfaces responsivas",
-              "Participar de code reviews e seguir boas práticas de desenvolvimento",
-              "Trabalhar com APIs RESTful e bancos de dados",
-              "Contribuir para a arquitetura e melhoria contínua dos sistemas",
-            ],
+        if (vaga) setVaga(vaga);
 
-            requisitos: [
-              "Graduação em Ciência da Computação, Engenharia ou área relacionada",
-              "Conhecimento em JavaScript, React e Node.js",
-              "Experiência com Git e controle de versão",
-              "Conhecimento básico em bancos de dados (SQL/NoSQL)",
-              "Inglês intermediário para leitura técnica",
-            ],
-
-            diferenciais: [
-              "Experiência com TypeScript",
-              "Conhecimento em Docker e containerização",
-              "Experiência com metodologias ágeis",
-              "Contribuições em projetos open source",
-              "Certificações em tecnologias relevantes",
-            ],
-
-            beneficios: [
-              "Plano de saúde e odontológico",
-              "Vale refeição e alimentação",
-              "Auxílio home office",
-              "Plano de carreira estruturado",
-              "Cursos e certificações pagos pela empresa",
-              "Horário flexível",
-              "Day off no aniversário",
-            ],
-
-            sobreEmpresa: `A TechCorp Solutions é uma empresa líder em desenvolvimento de software, com mais de 10 anos de experiência no mercado. Trabalhamos com clientes de diversos segmentos, sempre buscando inovação e excelência em nossos projetos.
-        
-Nossa cultura é baseada em colaboração, aprendizado contínuo e crescimento mútuo. Acreditamos que pessoas felizes produzem melhores resultados.`,
-
-            cultura: [
-              "Ambiente colaborativo e inclusivo",
-              "Foco no desenvolvimento pessoal e profissional",
-              "Flexibilidade e equilíbrio vida-trabalho",
-              "Inovação e experimentação incentivadas",
-            ],
-          };
-        });
-        setVaga(vagas[0] || []);
         setLoading(false);
       });
     };

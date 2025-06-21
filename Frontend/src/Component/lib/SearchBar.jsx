@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function SearchBar() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState("Brasil");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -75,9 +75,10 @@ export default function SearchBar() {
               <input
                 type="text"
                 id="location"
-                className="block w-full pl-10 pr-3 py-3 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-medium rounded-lg disabled:bg-gray-100 focus:ring-2 focus:ring-primary focus:border-primary"
                 placeholder="Localização"
                 value={location}
+                disabled={true}
                 onChange={(e) => setLocation(e.target.value)}
               />
             </div>

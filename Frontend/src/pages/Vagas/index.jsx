@@ -10,6 +10,7 @@ export default function Vagas() {
   //check if exists params
   const [searchParams] = useSearchParams();
   const query = searchParams.get("search"); // Pega o parametro Search, caso ele exista
+  debugger;
   const [filtroModalidade, setFiltroModalidade] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroArea, setFiltroArea] = useState("");
@@ -20,7 +21,10 @@ export default function Vagas() {
   const itemsPerPage = 6;
 
   useEffect(() => {
-    api.get(`/vagas${query && "?search=" + query}`).then((response) => {
+    debugger;
+    let queryBuild = query ? "?search=" + query : "";
+    setSearchTerm(query || "");
+    api.get(`/vagas/${queryBuild}`).then((response) => {
       debugger;
       const vagas = response.data.vagas.map((vaga) => {
         return {
