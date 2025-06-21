@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import AdminHeader from "../../../../Component/AdminHeader";
-import api from "../../../../utils/api";
+import AdminHeader from "../../../../Component/AdminHeader/index.jsx";
+import api from "../../../../utils/api.jsx";
 import useFlashMessage from "../../../../hooks/useFlashMessage.jsx";
 import EmpresaAsyncSelect from "../../components/EmpresaAsyncSelect.jsx";
 
 export default function AdminVagasForm() {
-  const { id } = useParams();
-  const isEditing = id !== undefined;
+  const { titulo } = useParams();
+  const isEditing = titulo !== "nova";
+  const [loading, setLoading] = useState(true);
   const { setFlashMessage } = useFlashMessage();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -70,6 +71,37 @@ export default function AdminVagasForm() {
       : "",
   });
 
+  // Simulação de dados da vaga
+  useEffect(() => {
+    const carregarVaga = async () => {
+      setLoading(true);
+      debugger;
+      // Simulação de API call
+      await api.get(`/vagas/${titulo}`).then((response) => {
+        //map first item from vaga
+
+        const { vaga } = response.data;
+
+        if (vaga) {
+          vaga.responsabilidades = vaga.responsabilidades?.join("\n");
+          vaga.requisitos = vaga.requisitos?.join("\n");
+          vaga.diferenciais = vaga.diferenciais?.join("\n");
+          vaga.beneficios = vaga.beneficios?.join("\n");
+          vaga.cultura = vaga.cultura?.join("\n");
+          setFormData(vaga);
+        }
+
+        setLoading(false);
+      });
+    };
+
+    if (isEditing) {
+      carregarVaga();
+    } else {
+      setLoading(false);
+    }
+  }, [titulo]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -101,17 +133,28 @@ export default function AdminVagasForm() {
     const formattedData = formatFormData(formData);
     console.log("Dados formatados:", formattedData);
     //if successs, show card message
-    // try {
-    //   const response = api.post("/vagas/CadastrarVaga", formattedData);
-    //   return response.data;
-    // } catch (error) {
-    //   msgText = error.response.data.message;
-    //   msgType = "error";
-    // } finally {
-    //   setFlashMessage(msgText, msgType);
-    //   navigate("/admin/vagas");
-    // }
+    try {
+      const response = api.post("/vagas/CadastrarVaga", formattedData);
+      return response.data;
+    } catch (error) {
+      msgText = error.response.data.message;
+      msgType = "error";
+    } finally {
+      setFlashMessage(msgText, msgType);
+      navigate("/admin/vagas");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-light">
+        <AdminHeader />
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-light">

@@ -13,7 +13,7 @@ import Blog from "./pages/Blog/index.jsx";
 import BlogPost from "./pages/Blog/[id]/index.jsx";
 import AdminDashboard from "./pages/Admin/dashboard/index.jsx";
 import AdminVagas from "./pages/Admin/vagas/index.jsx";
-import AdminVagasForm from "./pages/Admin/vagas/[id]/index.jsx";
+import AdminVagasForm from "./pages/Admin/vagas/[titulo]/index.jsx";
 import AdminEmpresas from "./pages/Admin/empresas/index.jsx";
 import AdminEmpresaForm from "./pages/Admin/empresas/[id]/index.jsx";
 import AdminUsuarios from "./pages/Admin/usuarios/index.jsx";
@@ -41,8 +41,7 @@ function AppRoutes() {
             <Route path="/registrar" element={<Register />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/vagas" element={<AdminVagas />} />
-            <Route path="/admin/vagas/nova" element={<AdminVagasForm />} />
-            <Route path="/admin/vagas/:id" element={<AdminVagasForm />} />
+            <Route path="/admin/vagas/:titulo" element={<AdminVagasForm />} />
             <Route path="/admin/empresas" element={<AdminEmpresas />} />
             <Route path="/admin/empresas/nova" element={<AdminEmpresaForm />} />
             <Route path="/admin/empresas/:id" element={<AdminEmpresaForm />} />
