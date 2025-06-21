@@ -410,7 +410,7 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <Link
-                          to={`/admin/vagas/${vaga.id}`}
+                          to={`/admin/vagas/${vaga.titulo}`}
                           className="text-primary hover:text-primary-dark"
                         >
                           <svg

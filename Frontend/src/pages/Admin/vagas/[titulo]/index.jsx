@@ -88,6 +88,7 @@ export default function AdminVagasForm() {
           vaga.diferenciais = vaga.diferenciais?.join("\n");
           vaga.beneficios = vaga.beneficios?.join("\n");
           vaga.cultura = vaga.cultura?.join("\n");
+          vaga.publicadoEm = vaga.publicadoEm?.split("T")[0];
           setFormData(vaga);
         }
 
