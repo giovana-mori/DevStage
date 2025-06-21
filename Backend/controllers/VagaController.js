@@ -25,9 +25,10 @@ export default class VagaController {
 
       res.status(201).json(savedVaga);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ message: error.message });
     }
   }
+  
   static async getVagas(req, res) {
     try {
       const {
@@ -85,22 +86,27 @@ export default class VagaController {
       res.status(200).json({ vagas });
     } catch (error) {
       res.status(500).json({
-        error: error.message,
+        message: error.message,
         details: "Erro ao buscar vagas",
       });
     }
   }
 
   static async getVagaByTitulo(req, res) {
-    const { titulo } = req.params;
-    if (!titulo) {
-      return res.status(422).json({ message: "Nome da vaga obrigatório" });
+    try {
+      const { titulo } = req.params;
+      console.log(titulo);
+      if (!titulo) {
+        return res.status(422).json({ message: "Nome da vaga obrigatório" });
+      }
+      const vaga = await Vaga.findOne({ titulo }).sort("-createdAt");
+      if (!vaga || vaga.length === 0) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+      res.status(200).json({ vaga });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-    const vaga = await Vaga.find({ titulo }).sort("-createdAt");
-    if (!vaga || vaga.length === 0) {
-      return res.status(404).json({ message: "Vaga não encontrada" });
-    }
-    res.status(200).json({ vaga });
   }
 
   static async updateVaga(req, res) {
