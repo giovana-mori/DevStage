@@ -23,6 +23,9 @@ const empresaSchema = new Schema({
   descricao: {
     type: String,
   },
+  cultura: {
+    type: String,
+  },
   setor: {
     type: String,
     required: true,
