@@ -7,6 +7,7 @@ import api from "../../../utils/api";
 const EmpresaAsyncSelect = ({
   name,
   value,
+  defaultValue,
   onChange,
   required = false,
   placeholder = "Buscar empresa...",
@@ -19,6 +20,7 @@ const EmpresaAsyncSelect = ({
 
   const loadEmpresas = useCallback(
     debounce(async (inputValue, callback) => {
+      debugger;
       try {
         setIsLoading(true);
         const res = await api.get(`/empresas/${inputValue}`);
@@ -38,34 +40,36 @@ const EmpresaAsyncSelect = ({
     []
   );
 
-  // useEffect(() => {
-  //   if (value) {
-  //     const loadSelectedEmpresa = async () => {
-  //       try {
-  //         setIsLoading(true);
-  //         const res = await api.get(`/empresas/${value}`);
-  //         setEmpresaOptions([
-  //           {
-  //             value: res.data._id,
-  //             label: res.data.nome,
-  //             ...res.data,
-  //           },
-  //         ]);
-  //       } catch (error) {
-  //         console.error("Erro ao carregar empresa:", error);
-  //       } finally {
-  //         setIsLoading(false);
-  //       }
-  //     };
-  //     loadSelectedEmpresa();
-  //   }
-  // }, [value]);
+  useEffect(() => {
+    if (value) {
+      const loadSelectedEmpresa = async () => {
+        try {
+          setIsLoading(true);
+          const res = await api.get(`/empresas/${value}`);
+          setEmpresaOptions([
+            {
+              value: res.data._id,
+              label: res.data.nome,
+              ...res.data,
+            },
+          ]);
+        } catch (error) {
+          console.error("Erro ao carregar empresa:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      loadSelectedEmpresa();
+    }
+  }, [defaultValue]);
 
+  debugger;
   return (
     <div className={className}>
       <AsyncSelect
         name={name}
         cacheOptions
+        defaultInputValue={value || ""}
         loadOptions={loadEmpresas}
         defaultOptions={empresaOptions}
         value={empresaOptions.find((opt) => opt.value === value)}

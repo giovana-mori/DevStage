@@ -75,11 +75,9 @@ export default function AdminVagasForm() {
   useEffect(() => {
     const carregarVaga = async () => {
       setLoading(true);
-      debugger;
       // Simulação de API call
       await api.get(`/vagas/${titulo}`).then((response) => {
         //map first item from vaga
-
         const { vaga } = response.data;
 
         if (vaga) {
@@ -89,6 +87,7 @@ export default function AdminVagasForm() {
           vaga.beneficios = vaga.beneficios?.join("\n");
           vaga.cultura = vaga.cultura?.join("\n");
           vaga.publicadoEm = vaga.publicadoEm?.split("T")[0];
+          vaga.empresa = vaga.empresa?._id;
           setFormData(vaga);
         }
 
@@ -242,6 +241,7 @@ export default function AdminVagasForm() {
                 /> */}
                 <EmpresaAsyncSelect
                   value={formData.empresa}
+                  defaultValue={formData.empresa}
                   onChange={(value) =>
                     setFormData((prev) => ({ ...prev, empresa: value }))
                   }
