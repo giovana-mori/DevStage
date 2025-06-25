@@ -22,7 +22,7 @@ const candidatoSchema = new Schema({
   },
 });
 
-const vagaSchema = new Schema(
+const vagaExternaSchema = new Schema(
   {
     titulo: {
       type: String,
@@ -32,10 +32,9 @@ const vagaSchema = new Schema(
       type: String,
       required: true,
     },
-    /*responsabilidades: {
+    responsabilidades: {
       type: [String],
-      required: true,
-    },*/
+    },
     requisitos: {
       type: [String],
       required: true,
@@ -46,11 +45,9 @@ const vagaSchema = new Schema(
     },
     beneficios: {
       type: [String],
-      required: true,
     },
     modalidade: {
       type: String,
-      enum: ["Presencial", "Remoto", "Híbrido"],
       required: true,
     },
     localizacao: {
@@ -73,17 +70,14 @@ const vagaSchema = new Schema(
     },
     vagasDisponiveis: {
       type: Number,
-      required: true,
-      min: 1,
     },
     empresa: {
-      type: Schema.Types.ObjectId,
+      type: String, // String pois só vem o nome da empresa da api
       ref: "Empresa", // Deve ser igual ao nome do modelo
       required: true,
     },
     email_contato: {
       type: String,
-      required: true,
       match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         "Por favor, informe um e-mail válido",
@@ -109,5 +103,5 @@ const vagaSchema = new Schema(
   { timestamps: true }
 );
 
-const Vaga = mongoose.model("Vaga", vagaSchema);
-export default Vaga;
+const VagaExterna = mongoose.model("VagaExterna", vagaExternaSchema);
+export default VagaExterna;

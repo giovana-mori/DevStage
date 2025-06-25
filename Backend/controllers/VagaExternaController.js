@@ -1,34 +1,56 @@
 import Empresa from "../models/Empresa.js";
-import Vaga from "../models/Vaga.js";
+import VagaExterna from "../models/VagaExterna.js";
 import getToken from "../helpers/get-token.js";
 import getUserByToken from "../helpers/get-user-by-token.js";
+import axios from "axios";
 
-export default class VagaController {
-  static async createVaga(req, res) {
+export default class VagaExternaController {
+  static async importarVagas(req,res) {
     try {
-      // Verifica se a empresa existe
-      const empresa = await Empresa.findById(req.body.empresa);
-      if (!empresa) {
-        return res.status(404).json({ message: "Empresa não encontrada" });
+      const response = await axios.get("https://jsearch.p.rapidapi.com/search",{
+        headers: {
+          'x-rapidapi-key': JSEARCH_API_KEY,
+          'x-rapidapi-host': 'jsearch.p.rapidapi.com'
+        },
+        params: {
+          query: req.query.query || "desenvolvedor",
+          page: req.query.page || "1",
+          num_pages: req.query.num_pages || "1",
+          country: req.query.country || "br",
+          date_posted: 'all'
+        },
+      });
+
+      const vagas = response.data.data;
+      const vagasExternas = [];
+      for (const vaga of vagas) {
+        const novaVaga = new VagaExterna({
+          titulo: vaga.job_title,
+          descricao: vaga.job_description,
+          //responsabilidades: vaga.job_responsibilities,
+          requisitos: vaga.job_requirements,
+          beneficios: vaga.job_benefits,
+          modalidade: vaga.job_employment_type,
+          tipoContrato: "Estágio",
+          nivel: "Estagiário",
+          salario: vaga.job_salary ? vaga.job_salary : "Não informado", // Verifica se o salário está disponível
+          vagasDisponiveis: 1, // Definido como 1, pode ser ajustado conforme necessário
+          localizacao: vaga.job_city + ", " + vaga.job_country,
+          empresa: vaga.employer_name, // Pode ser necessário ajustar conforme o modelo de Empresa
+          email_contato: vaga.job_apply_email, // Email de contato para a vaga
+          link_candidatura: vaga.job_apply_link, // Link para candidatura
+          url: vaga.employer_website, // Link para a aplicação
+        });
+
+        await novaVaga.save();
+        vagasExternas.push(novaVaga);
       }
-
-      // Cria a vaga
-      const vaga = new Vaga(req.body);
-      const savedVaga = await vaga.save();
-
-      // Atualiza a empresa com a nova vaga
-      await Empresa.findByIdAndUpdate(
-        req.body.empresa,
-        { $push: { vagas: savedVaga._id } },
-        { new: true }
-      );
-
-      res.status(201).json(savedVaga);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
+      res.status(200).json({ message:"Vagas importadas com sucesso", vagas: vagasExternas });
+    } catch(error){
+      res.status(500).json({ message: "Erro ao importar vagas", error: error.message });
     }
   }
-
+  
   static async getVagas(req, res) {
     try {
       const {
@@ -81,7 +103,7 @@ export default class VagaController {
       }
 
       // Executar query
-      const vagas = await Vaga.find(query).populate("empresa").sort(sortBy);
+      const vagas = await VagaExterna.find(query).populate("empresa").sort(sortBy);
 
       res.status(200).json({ vagas });
     } catch (error) {
@@ -99,7 +121,7 @@ export default class VagaController {
       if (!titulo) {
         return res.status(422).json({ message: "Nome da vaga obrigatório" });
       }
-      const vaga = await Vaga.findOne({ titulo }).populate("empresa").sort("-createdAt");
+      const vaga = await VagaExterna.findOne({ titulo }).populate("empresa").sort("-createdAt");
       if (!vaga || vaga.length === 0) {
         return res.status(404).json({ message: "Vaga não encontrada" });
       }
@@ -109,35 +131,10 @@ export default class VagaController {
     }
   }
 
-  static async updateVaga(req, res) {
-    const id = req.params.id;
-
-    try {
-      const vaga = await Vaga.findById(id);
-      if (!vaga) {
-        return res.status(404).json({ message: "Vaga não encontrada" });
-      }
-
-      const updatedVaga = await Vaga.findByIdAndUpdate(
-        id,
-        {
-          ...req.body,
-        },
-        { new: true }
-      );
-
-      return res
-        .status(200)
-        .json({ message: "Vaga atualizada com sucesso", vaga: updatedVaga });
-    } catch (error) {
-      return res.status(500).json({ message: "Erro ao atualizar vaga" });
-    }
-  }
-
   static async deleteVaga(req, res) {
     const id = req.params.id;
     try {
-      const vaga = await Vaga.findByIdAndDelete(id);
+      const vaga = await VagaExterna.findByIdAndDelete(id);
       if (!vaga) {
         return res.status(404).json({ message: "Vaga não encontrada" });
       }
@@ -158,7 +155,7 @@ export default class VagaController {
       return res.status(422).json({ message: "Vaga não encontrada" });
     }
     try {
-      const addingUser = await Vaga.findByIdAndUpdate(
+      const addingUser = await VagaExterna.findByIdAndUpdate(
         vaga,
         {
           $addToSet: {
@@ -200,7 +197,7 @@ export default class VagaController {
       return res.status(422).json({ message: "Vaga não encontrada" });
     }
     try {
-      const listaCandidatos = await Vaga.findById(vaga).select("candidatos");
+      const listaCandidatos = await VagaExterna.findById(vaga).select("candidatos");
       return res.status(200).json({ listaCandidatos });
     } catch (error) {
       return res
