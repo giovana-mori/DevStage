@@ -12,6 +12,7 @@ import dotenv from "dotenv";
 
 const app = new express();
 dotenv.config();
+
 app.use(cookieparser());
 //mensagem json
 app.use(express.json());
