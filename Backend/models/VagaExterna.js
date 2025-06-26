@@ -78,10 +78,10 @@ const vagaExternaSchema = new Schema(
     },
     email_contato: {
       type: String,
-      match: [
+      /*match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         "Por favor, informe um e-mail válido",
-      ],
+      ],*/
     },
     link_candidatura: {
       type: String,

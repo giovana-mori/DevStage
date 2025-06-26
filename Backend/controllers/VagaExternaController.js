@@ -4,20 +4,17 @@ import getToken from "../helpers/get-token.js";
 import getUserByToken from "../helpers/get-user-by-token.js";
 import axios from "axios";
 
-
-
 export default class VagaExternaController {
-  static async importarVagas(req,res) {
+  static async importarVagas(req, res) {
     try {
       const key_api = process.env.JSEARCH_API_KEY;
-      const response = await axios.get("https://jsearch.p.rapidapi.com/search",{
+      const response = await axios.get("https://jsearch.p.rapidapi.com/search", {
         headers: {
           'x-rapidapi-key': key_api,
           'x-rapidapi-host': 'jsearch.p.rapidapi.com'
         },
         params: {
           query: req.query.query || "desenvolvedor",
-          page: req.query.page || "1",
           num_pages: req.query.num_pages || "20",
           country: req.query.country || "br",
           date_posted: 'all',
@@ -32,35 +29,38 @@ export default class VagaExternaController {
           titulo: vaga.job_title,
           descricao: vaga.job_description,
           //responsabilidades: vaga.job_responsibilities,
-          requisitos: vaga.job_requirements ? vaga.job_requirements: "Não informado",
-          beneficios: vaga.job_benefits ? vaga.job_benefits: "Não informado",
+          requisitos: vaga.job_requirements ? vaga.job_requirements : "Não informado",
+          beneficios: vaga.job_benefits ? vaga.job_benefits : "Não informado",
           modalidade: vaga.job_employment_type,
+          responsabilidades: vaga.job_responsibilities ? vaga.job_responsibilities : "Não informado",
           tipoContrato: "Estágio",
           nivel: "Estagiário",
           salario: vaga.job_salary ? vaga.job_salary : "Não informado", // Verifica se o salário está disponível
-          vagasDisponiveis: 1, // Definido como 1, pode ser ajustado conforme necessário
-          localizacao: vaga.job_city + ", " + vaga.job_country,
+          vagasDisponiveis: vaga.num_available_positions ? vaga.num_available_positions : 1, // Definido como 1, pode ser ajustado conforme necessário
+          localizacao: vaga.job_city ? vaga.job_city : "Não informado" + ", " + vaga.job_country,
           empresa: vaga.employer_name, // Pode ser necessário ajustar conforme o modelo de Empresa
-          email_contato: vaga.job_apply_email, // Email de contato para a vaga
+          email_contato: vaga.job_apply_email ? vaga.job_apply_email : "Não informado", // Email de contato para a vaga
           link_candidatura: vaga.job_apply_link, // Link para candidatura
           url: vaga.employer_website, // Link para o site da empresa
         });
-        
+
         const titulo = novaVaga.titulo;
         const verificacao = await VagaExterna.findOne({ titulo })
-        if(!verificacao){
+        if (!verificacao) {
           await novaVaga.save();
           vagasExternas.push(novaVaga);
-        } else {
-          res.status(400).json({message: "Vaga já inserida!"});
         }
       }
-      res.status(200).json({ message:"Vagas importadas com sucesso", vagas: vagasExternas });
-    } catch(error){
+      if (vagasExternas.length === 0) {
+        return res.status(404).json({ message: "Nenhuma vaga nova encontrada para importar" });
+      } else {
+        res.status(200).json({ message: "Vagas importadas com sucesso", vagas: vagasExternas });
+      }
+    } catch (error) {
       res.status(500).json({ message: "Erro ao importar vagas", error: error.message });
     }
   }
-  
+
   static async getVagasExternas(req, res) {
     try {
       const {
@@ -99,21 +99,11 @@ export default class VagaExternaController {
 
       // Filtro por empresa (ID ou nome)
       if (empresa) {
-        const isObjectId = /^[0-9a-fA-F]{24}$/.test(empresa);
-
-        if (isObjectId) {
-          query.empresa = empresa;
-        } else {
-          // Busca por nome da empresa usando lookup
-          const empresas = await Empresa.find({
-            nome: new RegExp(empresa, "i"),
-          });
-          query.empresa = { $in: empresas.map((e) => e._id) };
-        }
+        query.empresa = new RegExp(empresa, "i");
       }
 
       // Executar query
-      const vagas = await VagaExterna.find(query).populate("empresa").sort(sortBy);
+      const vagas = await VagaExterna.find(query).sort(sortBy);
 
       res.status(200).json({ vagas });
     } catch (error) {
@@ -126,7 +116,7 @@ export default class VagaExternaController {
 
   static async getVagaByTitulo(req, res) {
     try {
-      const { titulo } = req.params;
+      const {titulo} = req.params;
       console.log(titulo);
       if (!titulo) {
         return res.status(422).json({ message: "Nome da vaga obrigatório" });
