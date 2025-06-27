@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   MapPin,
   Clock,
@@ -18,8 +18,10 @@ import {
 import Header from "../../../Component/Header";
 import { Link, useParams } from "react-router-dom";
 import api from "../../../utils/api";
+import { Context } from "../../../context/UserContext";
 
 export default function DetalhesVaga() {
+  const { authenticated } = useContext(Context);
   const { titulo } = useParams();
   const [vaga, setVaga] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,30 +35,51 @@ export default function DetalhesVaga() {
   useEffect(() => {
     const carregarVaga = async () => {
       setLoading(true);
-      debugger;
       // Simulação de API call
-      await api.get(`/vagas/${titulo}`).then((response) => {
-        //map first item from vaga
-
+      try {
+        const response = await api.get(`/vagas/${titulo}`);
         const { vaga } = response.data;
 
         if (vaga) setVaga(vaga);
-
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Erro ao carregar vaga:", error);
+        }
+      } finally {
         setLoading(false);
-      });
+      }
     };
 
     carregarVaga();
   }, [titulo]);
 
-  const handleCandidatar = async () => {
+  const handleCandidatar = async (e) => {
+    e.preventDefault();
     setCandidatando(true);
+    const id = vaga._id;
+    console.log(authenticated);
+    try {
+      const response = await api.post(`/vagas/CandidatarVaga/${id}`);
+      const { vaga } = response.data;
+      if (vaga) setVaga(vaga);
+      setJaCandidatou(true);
+      setCandidatando(false);
+      setMostrarModalCandidatura(false);
+      setCartaApresentacao("");
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Erro ao carregar vaga:", error);
+      }
+    } finally {
+      setLoading(false);
+    }
+
     // Simulação de candidatura
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setJaCandidatou(true);
-    setCandidatando(false);
-    setMostrarModalCandidatura(false);
-    setCartaApresentacao("");
+    // await new Promise((resolve) => setTimeout(resolve, 2000));
+    // setJaCandidatou(true);
+    // setCandidatando(false);
+    // setMostrarModalCandidatura(false);
+    // setCartaApresentacao("");
   };
 
   const toggleFavorito = () => {
@@ -107,9 +130,7 @@ export default function DetalhesVaga() {
         </div>
       </div>
     );
-  }
-
-  if (vaga)
+  } else
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -131,8 +152,8 @@ export default function DetalhesVaga() {
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="flex items-start gap-4 mb-4">
                   <img
-                    src={vaga.logoEmpresa || "/placeholder.svg"}
-                    alt={vaga.empresa}
+                    src={"/placeholder.svg"}
+                    alt={vaga.empresa.nome}
                     className="w-16 h-16 rounded-lg object-cover"
                   />
                   <div className="flex-1">
@@ -140,7 +161,7 @@ export default function DetalhesVaga() {
                       {vaga.titulo}
                     </h1>
                     <p className="text-lg text-purple-600 font-semibold mb-2">
-                      {vaga.empresa}
+                      {vaga.empresa.nome}
                     </p>
                     <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                       <div className="flex items-center gap-1">
@@ -196,7 +217,7 @@ export default function DetalhesVaga() {
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <Users className="w-4 h-4" />
-                    {vaga.candidatos} candidatos
+                    {vaga.candidatos.length} candidatos
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
@@ -289,24 +310,26 @@ export default function DetalhesVaga() {
               {/* Sobre a Empresa */}
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-800 mb-4">
-                  Sobre a {vaga.empresa}
+                  Sobre a {vaga.empresa.nome}
                 </h2>
                 <div className="prose prose-gray max-w-none mb-6">
-                  {vaga.sobreEmpresa?.split("\n").map((paragrafo, index) => (
-                    <p
-                      key={index}
-                      className="mb-3 text-gray-600 leading-relaxed"
-                    >
-                      {paragrafo}
-                    </p>
-                  ))}
+                  {vaga?.empresa?.descricao
+                    ?.split("\n")
+                    .map((paragrafo, index) => (
+                      <p
+                        key={index}
+                        className="mb-3 text-gray-600 leading-relaxed"
+                      >
+                        {paragrafo}
+                      </p>
+                    ))}
                 </div>
 
                 <h3 className="font-semibold text-gray-800 mb-3">
                   Nossa Cultura
                 </h3>
                 <ul className="space-y-2">
-                  {vaga.cultura?.map((item, index) => (
+                  {vaga?.empresa?.cultura?.map((item, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
                       <span className="text-gray-600">{item}</span>
@@ -361,7 +384,7 @@ export default function DetalhesVaga() {
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Candidatos</span>
-                    <span className="font-semibold">{vaga.candidatos}</span>
+                    <span className="font-semibold">{vaga.candidatos.length}</span>
                   </div>
                 </div>
               </div>
@@ -428,7 +451,7 @@ export default function DetalhesVaga() {
               <p className="text-gray-600 mb-4">
                 Você está se candidatando para a vaga de{" "}
                 <strong>{vaga.titulo}</strong> na{" "}
-                <strong>{vaga.empresa}</strong>.
+                <strong>{vaga.empresa.nome}</strong>.
               </p>
 
               <div className="mb-4">
@@ -452,6 +475,7 @@ export default function DetalhesVaga() {
                   Cancelar
                 </button>
                 <button
+                  data-id={vaga.id}
                   onClick={handleCandidatar}
                   disabled={candidatando}
                   className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-orange-500 text-white rounded-lg hover:from-purple-700 hover:to-orange-600 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
