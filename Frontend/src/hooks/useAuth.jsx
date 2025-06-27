@@ -5,8 +5,10 @@ import { useNavigate } from "react-router-dom";
 
 export default function useAuth() {
   const [authenticated, setAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const { setFlashMessage } = useFlashMessage();
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -50,6 +52,7 @@ export default function useAuth() {
 
   async function authUser(data) {
     setAuthenticated(true);
+    setUser(data); // supondo que seu backend retorne { token, user }
     localStorage.setItem("token", JSON.stringify(data.token));
   }
 
@@ -62,5 +65,6 @@ export default function useAuth() {
     navigate("/");
     setFlashMessage(msgText, msgType);
   }
-  return { register, login, logout, authenticated };
+
+  return { register, login, logout, authenticated, user };
 } //export

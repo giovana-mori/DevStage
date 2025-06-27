@@ -22,6 +22,8 @@ import AdminBlog from "./pages/Admin/blog/index.jsx";
 import AdminBlogPostForm from "./pages/Admin/blog/[id]/index.jsx";
 import Perfil from "./pages/Perfil/index.jsx";
 import DetalhesVaga from "./pages/Vagas/[titulo]/index.jsx";
+import ProtectedAdminRoute from "./utils/ProtectedAdminRoute";
+
 function AppRoutes() {
   return (
     <BrowserRouter>
@@ -39,17 +41,94 @@ function AppRoutes() {
             <Route path="/blog/:id" element={<BlogPost />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registrar" element={<Register />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/vagas" element={<AdminVagas />} />
-            <Route path="/admin/vagas/:titulo" element={<AdminVagasForm />} />
-            <Route path="/admin/empresas" element={<AdminEmpresas />} />
-            <Route path="/admin/empresas/:titulo" element={<AdminEmpresaForm />} />
-            <Route path="/admin/usuarios" element={<AdminUsuarios />} />
-            <Route path="/admin/usuarios/novo" element={<AdminUsuarioForm />} />
-            <Route path="/admin/usuarios/:id" element={<AdminUsuarioForm />} />
-            <Route path="/admin/blog" element={<AdminBlog />} />
-            <Route path="/admin/blog/novo" element={<AdminBlogPostForm />} />
-            <Route path="/admin/blog/:id" element={<AdminBlogPostForm />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminDashboard />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/vagas"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminVagas />{" "}
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/vagas/:titulo"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminVagasForm />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/empresas"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminEmpresas />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/empresas/:titulo"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminEmpresaForm />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/usuarios"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminUsuarios />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/usuarios/novo"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminUsuarioForm />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/usuarios/:id"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminUsuarioForm />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/blog"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminBlog />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/blog/novo"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminBlogPostForm />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/blog/:id"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminBlogPostForm />
+                </ProtectedAdminRoute>
+              }
+            />
           </Routes>
         </Container>
         <Footer />

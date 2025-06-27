@@ -62,16 +62,16 @@ export default function DetalhesVaga() {
       const response = await api.post(`/vagas/CandidatarVaga/${id}`);
       const { vaga } = response.data;
       if (vaga) setVaga(vaga);
-      setJaCandidatou(true);
-      setCandidatando(false);
-      setMostrarModalCandidatura(false);
-      setCartaApresentacao("");
     } catch (error) {
       if (error.name !== "AbortError") {
         console.error("Erro ao carregar vaga:", error);
       }
     } finally {
       setLoading(false);
+      setJaCandidatou(true);
+      setCandidatando(false);
+      setMostrarModalCandidatura(false);
+      setCartaApresentacao("");
     }
 
     // Simulação de candidatura
