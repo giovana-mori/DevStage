@@ -55,6 +55,7 @@ const vagasExemplo = [
 ];
 
 export default function AdminDashboard() {
+  debugger;
   const [vagas, setVagas] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;

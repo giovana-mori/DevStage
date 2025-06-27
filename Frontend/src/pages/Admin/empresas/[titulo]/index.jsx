@@ -17,6 +17,7 @@ export default function AdminEmpresaForm({ id }) {
     nome: "",
     setor: "",
     localizacao: "",
+    cnpj: "",
     site: "",
     email_contato: "",
     telefone: "",
@@ -74,6 +75,7 @@ export default function AdminEmpresaForm({ id }) {
       newErrors.email_contato = "E-mail de contato é obrigatório";
     else if (!/\S+@\S+\.\S+/.test(formData.email_contato))
       newErrors.email_contato = "E-mail inválido";
+    if (!formData.cnpj.trim()) newErrors.cnpj = "CNPJ é obrigatório";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -89,11 +91,15 @@ export default function AdminEmpresaForm({ id }) {
 
     let msgText = "Cadastro realizado com sucesso";
     let msgType = "success";
+
+    console.log(formData);
     // Simulação de envio para API
     try {
       console.log(formData);
       api.post(
-        `/empresas/${isEditing ? "EditarEmpresa/" + formData._id : "CadastrarEmpresa"}`,
+        `/empresas/${
+          isEditing ? "EditarEmpresa/" + formData._id : "CadastrarEmpresa"
+        }`,
         formData
       );
 
@@ -200,6 +206,30 @@ export default function AdminEmpresaForm({ id }) {
 
             <form onSubmit={handleSubmit} className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* CNPJ */}
+                <div className="col-span-1 md:col-span-2">
+                  <label
+                    htmlFor="cnpj"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
+                    CNPJ <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="cnpj"
+                    name="cnpj"
+                    value={formData.cnpj}
+                    onChange={handleChange}
+                    className={`block w-full px-3 py-2 border ${
+                      errors.cnpj ? "border-red-500" : "border-gray-medium"
+                    } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
+                    placeholder="Ex: 12.345.678/0001-90"
+                  />
+                  {errors.cnpj && (
+                    <p className="mt-1 text-sm text-red-500">{errors.cnpj}</p>
+                  )}
+                </div>
+
                 {/* Nome da empresa */}
                 <div>
                   <label

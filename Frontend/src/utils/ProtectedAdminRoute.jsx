@@ -3,13 +3,11 @@ import { Navigate } from "react-router-dom";
 import { Context } from "../context/UserContext";
 
 const ProtectedAdminRoute = ({ children }) => {
-  //   const { user, loading } = useContext(UserContext);
-  const { authenticated, user } = useContext(Context);
+  const { authenticated, user, loading } = useContext(Context);
 
-  if (!authenticated) return <Navigate to="/login" />;
+  if (loading) return <p>Carregando...</p>;
 
-  // Se o usuário não estiver logado ou não for admin
-  if (!user || user.tipo !== "admin") {
+  if (!authenticated || !user || user.tipo !== "admin") {
     return <Navigate to="/login" />;
   }
 

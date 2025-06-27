@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function useAuth() {
+  const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -11,10 +12,13 @@ export default function useAuth() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
+    const storedUser = localStorage.getItem("user");
+    if (token && storedUser) {
       api.defaults.headers.Authorization = `Bearer ${JSON.parse(token)}`;
       setAuthenticated(true);
+      setUser(JSON.parse(storedUser));
     }
+    setLoading(false); // <- IMPORTANTE
   }, []);
 
   async function register(user) {
@@ -39,6 +43,7 @@ export default function useAuth() {
     try {
       const response = await api.post("users/Login", user);
       console.log(response.data);
+      debugger;
       await authUser(response.data);
       navigate("/");
       return response.data;
@@ -52,8 +57,9 @@ export default function useAuth() {
 
   async function authUser(data) {
     setAuthenticated(true);
-    setUser(data); // supondo que seu backend retorne { token, user }
+    setUser(data.user); // supondo que seu backend retorne { token, user }
     localStorage.setItem("token", JSON.stringify(data.token));
+    localStorage.setItem("user", JSON.stringify(data.user));
   }
 
   async function logout() {
@@ -61,10 +67,12 @@ export default function useAuth() {
     let msgType = "success";
     setAuthenticated(false);
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
     api.defaults.headers.Authorization = undefined;
     navigate("/");
     setFlashMessage(msgText, msgType);
   }
 
-  return { register, login, logout, authenticated, user };
+  return { register, login, logout, authenticated, user, loading };
 } //export

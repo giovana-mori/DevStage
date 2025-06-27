@@ -18,11 +18,15 @@ const createUserToken = async (user, req, res) => {
       sameSite: "Strict", //permite que todas as ações serão feitas com segurança
       maxAge: 3600000,
     });
+    // Remover senha do objeto retornado
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
     res.status(200).json({
       //tirar depois
       message: "Você está logado",
       token: token,
       userId: user._id,
+      user: userWithoutPassword,
     });
   } catch (error) {
     return res.status(500).json({ message: "Erro ao gerar token", error });
