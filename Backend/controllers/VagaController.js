@@ -99,7 +99,9 @@ export default class VagaController {
       if (!titulo) {
         return res.status(422).json({ message: "Nome da vaga obrigatório" });
       }
-      const vaga = await Vaga.findOne({ titulo }).populate("empresa").sort("-createdAt");
+      const vaga = await Vaga.findOne({ titulo })
+        .populate("empresa")
+        .sort("-createdAt");
       if (!vaga || vaga.length === 0) {
         return res.status(404).json({ message: "Vaga não encontrada" });
       }
@@ -148,36 +150,38 @@ export default class VagaController {
   }
 
   static async addCandidato(req, res) {
-    const token = getToken(req);
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
     const user = await getUserByToken(token);
-    const vaga = req.params.id; //id da vaga
+    const vagaId = req.params.id; //id da vaga
     if (!user) {
       return res.status(422).json({ message: "Usuário não logado" });
     }
+
+    // Primeiro verifica se a vaga existe
+    const vaga = await Vaga.findById(vagaId);
     if (!vaga) {
-      return res.status(422).json({ message: "Vaga não encontrada" });
+      return res.status(404).json({ message: "Vaga não encontrada" });
     }
+
+    const jaCandidato = vaga.candidatos.some(
+      (candidato) => candidato.usuarioId.toString() === user._id.toString()
+    );
+
+    if (jaCandidato) {
+      return res
+        .status(409)
+        .json({ message: "Usuário já se candidatou a esta vaga" });
+    }
+
     try {
       const addingUser = await Vaga.findByIdAndUpdate(
-        vaga,
+        vagaId,
         {
           $addToSet: {
             candidatos: {
-              user: {
-                // informações do usuário sem informações sensíveis
-                _id: user._id,
-                nome: user.nome,
-                email: user.email,
-                telefone: user.telefone,
-                tipo: user.tipo,
-                status: user.status,
-                curso: user.curso,
-                instituicao_ensino: user.instituicao_ensino,
-                github: user.github,
-                linkedin: user.linkedin,
-                sobre: user.sobre,
-                portifolio: user.portifolio,
-              },
+              usuarioId: user._id,
+              cartaApresentacao: req.body.cartaApresentacao || "",
             },
           },
         },
@@ -190,7 +194,7 @@ export default class VagaController {
     } catch (error) {
       return res
         .status(500)
-        .json({ message: "Erro ao adicionar usuário à vaga" });
+        .json({ message: "Erro ao adicionar usuário à vaga", error: error });
     }
   }
 
