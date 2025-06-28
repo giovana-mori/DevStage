@@ -84,21 +84,40 @@ export default class UserController {
 
   static async login(req, res) {
     const { email, password } = req.body;
+
     if (!email || !password) {
-      res.status(422).json({ message: "Preencha os campos obrigatórios" });
-      return;
+      return res
+        .status(422)
+        .json({ message: "Preencha os campos obrigatórios" });
     }
-    const userExist = await User.findOne({ email: email });
-    if (!userExist) {
-      return res.status(422).json({ message: "Credenciais inválidas" });
+
+    try {
+      const userExist = await User.findOne({ email: email });
+
+      if (!userExist) {
+        return res.status(422).json({ message: "Credenciais inválidas" });
+      }
+
+      // Check if password hash is valid
+      if (!userExist.password || !userExist.password.startsWith("$")) {
+        return res
+          .status(500)
+          .json({ message: "Problema com a senha armazenada" });
+      }
+
+      // Verify password
+      const checkPassword = await Argon2.verify(userExist.password, password);
+
+      if (!checkPassword) {
+        return res.status(422).json({ message: "Credenciais inválidas" });
+      }
+
+      // Generate token
+      await createUserToken(userExist, req, res);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro interno no servidor" });
     }
-    //verificar a senha
-    const checkPassword = await Argon2.verify(userExist.password, password);
-    if (!checkPassword) {
-      return res.status(422).json({ message: "Credenciais inválidas" });
-    }
-    //gerar token
-    await createUserToken(userExist, req, res);
   }
 
   static async update(req, res) {
