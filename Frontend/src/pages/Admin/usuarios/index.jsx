@@ -1,125 +1,71 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import AdminHeader from "../../../Component/AdminHeader"
-import { Link } from "react-router-dom"
-
-// Dados de exemplo para a tabela de usuários
-const usuariosExemplo = [
-  {
-    id: 1,
-    nome: "João Silva",
-    email: "joao.silva@email.com",
-    tipo: "Estudante",
-    curso: "Ciência da Computação",
-    instituicao: "USP",
-    dataRegistro: "15/01/2023",
-    ultimoAcesso: "10/05/2023",
-    status: "Ativo",
-  },
-  {
-    id: 2,
-    nome: "Maria Oliveira",
-    email: "maria.oliveira@email.com",
-    tipo: "Estudante",
-    curso: "Engenharia de Software",
-    instituicao: "UNICAMP",
-    dataRegistro: "20/02/2023",
-    ultimoAcesso: "09/05/2023",
-    status: "Ativo",
-  },
-  {
-    id: 3,
-    nome: "Pedro Santos",
-    email: "pedro.santos@email.com",
-    tipo: "Estudante",
-    curso: "Sistemas de Informação",
-    instituicao: "UFRJ",
-    dataRegistro: "10/03/2023",
-    ultimoAcesso: "08/05/2023",
-    status: "Ativo",
-  },
-  {
-    id: 4,
-    nome: "Ana Costa",
-    email: "ana.costa@email.com",
-    tipo: "Estudante",
-    curso: "Análise e Desenvolvimento de Sistemas",
-    instituicao: "FATEC",
-    dataRegistro: "05/04/2023",
-    ultimoAcesso: "07/05/2023",
-    status: "Inativo",
-  },
-  {
-    id: 5,
-    nome: "Lucas Ferreira",
-    email: "lucas.ferreira@email.com",
-    tipo: "Recrutador",
-    empresa: "Acme Brasil",
-    dataRegistro: "25/02/2023",
-    ultimoAcesso: "10/05/2023",
-    status: "Ativo",
-  },
-  {
-    id: 6,
-    nome: "Juliana Martins",
-    email: "juliana.martins@email.com",
-    tipo: "Recrutador",
-    empresa: "Tech Solutions",
-    dataRegistro: "12/03/2023",
-    ultimoAcesso: "09/05/2023",
-    status: "Ativo",
-  },
-  {
-    id: 7,
-    nome: "Roberto Almeida",
-    email: "roberto.almeida@email.com",
-    tipo: "Recrutador",
-    empresa: "Digital Innovations",
-    dataRegistro: "18/03/2023",
-    ultimoAcesso: "08/05/2023",
-    status: "Ativo",
-  },
-  {
-    id: 8,
-    nome: "Camila Rodrigues",
-    email: "camila.rodrigues@email.com",
-    tipo: "Estudante",
-    curso: "Design Digital",
-    instituicao: "Mackenzie",
-    dataRegistro: "01/04/2023",
-    ultimoAcesso: "05/05/2023",
-    status: "Pendente",
-  },
-]
+import { useEffect, useState } from "react";
+import AdminHeader from "../../../Component/AdminHeader";
+import { Link } from "react-router-dom";
+import api from "../../../utils/api";
+import Badge from "../../../Component/Badge";
 
 export default function AdminUsuarios() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [tipoFilter, setTipoFilter] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 5
+  const [searchTerm, setSearchTerm] = useState("");
+  const [tipoFilter, setTipoFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const [usuarios, setUsuarios] = useState([]);
+
+  useEffect(() => {
+    api.get("/users").then((response) => {
+      const usuariosData = response.data.users.map((usuario) => {
+        return {
+          id: usuario._id,
+          nome: usuario.nome,
+          email: usuario.email,
+          tipo: usuario.tipo,
+          curso: usuario.curso || "N/D",
+          instituicao: usuario.instituicao_ensino || "N/D",
+          dataRegistro: new Date(usuario.createdAt).toLocaleDateString(
+            "pt-BR",
+            {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            }
+          ),
+          status: <Badge status={usuario.status.toLowerCase() === "ativo" ? true : false} />,
+        };
+      });
+      setUsuarios(usuariosData);
+    });
+  }, []);
 
   // Filtrar usuários com base na pesquisa e nos filtros
-  const filteredUsuarios = usuariosExemplo.filter(
+  const filteredUsuarios = usuarios.filter(
     (usuario) =>
       (usuario.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         usuario.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (usuario.instituicao && usuario.instituicao.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (usuario.empresa && usuario.empresa.toLowerCase().includes(searchTerm.toLowerCase()))) &&
+        (usuario.instituicao &&
+          usuario.instituicao
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())) ||
+        (usuario.empresa &&
+          usuario.empresa.toLowerCase().includes(searchTerm.toLowerCase()))) &&
       (tipoFilter === "" || usuario.tipo === tipoFilter) &&
-      (statusFilter === "" || usuario.status === statusFilter),
-  )
+      (statusFilter === "" || usuario.status === statusFilter)
+  );
 
   // Paginação
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = filteredUsuarios.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(filteredUsuarios.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredUsuarios.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+  const totalPages = Math.ceil(filteredUsuarios.length / itemsPerPage);
 
   const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber)
-  }
+    setCurrentPage(pageNumber);
+  };
 
   return (
     <div className="min-h-screen bg-gray-light">
@@ -127,8 +73,12 @@ export default function AdminUsuarios() {
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-dark">Gerenciamento de Usuários</h1>
-          <p className="text-gray-dark">Gerencie todos os usuários cadastrados na plataforma DevStage.</p>
+          <h1 className="text-2xl font-bold text-gray-dark">
+            Gerenciamento de Usuários
+          </h1>
+          <p className="text-gray-dark">
+            Gerencie todos os usuários cadastrados na plataforma DevStage.
+          </p>
         </div>
 
         {/* Filtros e busca */}
@@ -238,12 +188,6 @@ export default function AdminUsuarios() {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-dark uppercase tracking-wider"
                   >
-                    Último Acesso
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-dark uppercase tracking-wider"
-                  >
                     Status
                   </th>
                   <th
@@ -271,15 +215,21 @@ export default function AdminUsuarios() {
                             </span>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-dark">{usuario.nome}</div>
-                            <div className="text-sm text-gray-500">{usuario.email}</div>
+                            <div className="text-sm font-medium text-gray-dark">
+                              {usuario.nome}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {usuario.email}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            usuario.tipo === "Estudante" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"
+                            usuario.tipo.toLowerCase() === "estudante"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-purple-100 text-purple-800"
                           }`}
                         >
                           {usuario.tipo}
@@ -293,27 +243,19 @@ export default function AdminUsuarios() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-dark">{usuario.dataRegistro}</div>
+                        <div className="text-sm text-gray-dark">
+                          {usuario.dataRegistro}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-dark">{usuario.ultimoAcesso}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            usuario.status === "Ativo"
-                              ? "bg-green-100 text-green-800"
-                              : usuario.status === "Pendente"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {usuario.status}
-                        </span>
+                        {usuario.status}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <Link to={`/admin/usuarios/${usuario.id}`} className="text-primary hover:text-primary-dark">
+                          <Link
+                            to={`/admin/usuarios/${usuario.id}`}
+                            className="text-primary hover:text-primary-dark"
+                          >
                             <svg
                               className="w-5 h-5"
                               xmlns="http://www.w3.org/2000/svg"
@@ -358,7 +300,10 @@ export default function AdminUsuarios() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center text-gray-dark">
+                    <td
+                      colSpan="7"
+                      className="px-6 py-4 text-center text-gray-dark"
+                    >
                       Nenhum usuário encontrado com os filtros aplicados.
                     </td>
                   </tr>
@@ -370,11 +315,15 @@ export default function AdminUsuarios() {
           {/* Paginação */}
           <div className="px-6 py-4 flex justify-between items-center border-t border-gray-medium">
             <div className="text-sm text-gray-dark">
-              Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a{" "}
+              Mostrando{" "}
+              <span className="font-medium">{indexOfFirstItem + 1}</span> a{" "}
               <span className="font-medium">
-                {indexOfLastItem > filteredUsuarios.length ? filteredUsuarios.length : indexOfLastItem}
+                {indexOfLastItem > filteredUsuarios.length
+                  ? filteredUsuarios.length
+                  : indexOfLastItem}
               </span>{" "}
-              de <span className="font-medium">{filteredUsuarios.length}</span> resultados
+              de <span className="font-medium">{filteredUsuarios.length}</span>{" "}
+              resultados
             </div>
             <div className="flex space-x-2">
               <button
@@ -417,5 +366,5 @@ export default function AdminUsuarios() {
         </div>
       </main>
     </div>
-  )
+  );
 }

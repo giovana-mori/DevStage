@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import AdminHeader from "../../../Component/AdminHeader";
 import { Link } from "react-router-dom";
 import api from "../../../utils/api";
+import Badge from "../../../Component/Badge";
 
 export default function AdminVagas() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,11 +23,13 @@ export default function AdminVagas() {
           logo: "https://placehold.co/80x80/EEE/31343C",
           localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
           tipo: vaga.modalidade,
+          candidatos: vaga.candidatos.length,
           data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
           }),
+          status: <Badge status={vaga.ativo} />,
           tags: vaga.requisitos,
           descricao: vaga.descricao,
         };
@@ -37,7 +40,7 @@ export default function AdminVagas() {
 
   // Filtrar vagas com base na pesquisa e no filtro de status
   const filteredVagas = vagas.filter(
-    (vaga) => 
+    (vaga) =>
       (vaga.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
         vaga.empresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
         vaga.localizacao.toLowerCase().includes(searchTerm.toLowerCase())) &&
@@ -209,21 +212,11 @@ export default function AdminVagas() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-dark">
-                          {vaga.candidatos}
+                          {vaga.candidatos || 0}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            vaga.status === "Ativa"
-                              ? "bg-green-100 text-green-800"
-                              : vaga.status === "Pausada"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {vaga.status}
-                        </span>
+                        {vaga.status}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">

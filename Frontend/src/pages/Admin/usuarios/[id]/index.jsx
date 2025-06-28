@@ -1,11 +1,14 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import AdminHeader from "../../../../Component/AdminHeader"
-import { Link } from "react-router-dom"
+import { useState, useEffect } from "react";
+import AdminHeader from "../../../../Component/AdminHeader";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import api from "../../../../utils/api";
 
-export default function AdminUsuarioForm({ id }) {
-  const isEditing = id !== "novo"
+export default function AdminUsuarioForm() {
+  const { id } = useParams();
+  const isEditing = id !== "nova";
+  const navigate = useNavigate();
 
   // Estado inicial do formulário
   const [formData, setFormData] = useState({
@@ -22,80 +25,84 @@ export default function AdminUsuarioForm({ id }) {
     portfolio: "",
     sobre: "",
     status: "Ativo",
-  })
+  });
 
-  const [errors, setErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
-  const [successMessage, setSuccessMessage] = useState("")
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Simular carregamento de dados para edição
   useEffect(() => {
+    const carregarUsuario = async () => {
+      setIsLoading(true);
+      // Simulação de API call
+      await api.get(`/user/${id}`).then((response) => {
+        //map first item from vaga
+        const { user } = response.data;
+
+        if (user) {
+          setFormData(user);
+        }
+
+        setIsLoading(false);
+      });
+    };
+
     if (isEditing) {
-      setIsLoading(true)
-      // Simulação de chamada à API para buscar dados do usuário
-      setTimeout(() => {
-        setFormData({
-          nome: "João Silva",
-          email: "joao.silva@email.com",
-          tipo: "Estudante",
-          curso: "Ciência da Computação",
-          instituicao: "USP",
-          empresa: "",
-          cargo: "",
-          telefone: "(11) 98765-4321",
-          linkedin: "linkedin.com/in/joaosilva",
-          github: "github.com/joaosilva",
-          portfolio: "joaosilva.dev",
-          sobre: "Estudante de Ciência da Computação com interesse em desenvolvimento web e inteligência artificial.",
-          status: "Ativo",
-        })
-        setIsLoading(false)
-      }, 800)
+      carregarUsuario();
+    } else {
+      setIsLoading(false);
     }
-  }, [isEditing])
+  }, [isEditing]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Limpar erro do campo quando o usuário começa a digitar
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
 
-    if (!formData.nome.trim()) newErrors.nome = "Nome é obrigatório"
-    if (!formData.email.trim()) newErrors.email = "E-mail é obrigatório"
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "E-mail inválido"
+    if (!formData.nome.trim()) newErrors.nome = "Nome é obrigatório";
+    if (!formData.email.trim()) newErrors.email = "E-mail é obrigatório";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "E-mail inválido";
 
     if (formData.tipo === "Estudante") {
-      if (!formData.curso.trim()) newErrors.curso = "Curso é obrigatório"
-      if (!formData.instituicao.trim()) newErrors.instituicao = "Instituição é obrigatória"
+      if (!formData.curso.trim()) newErrors.curso = "Curso é obrigatório";
+      if (!formData.instituicao.trim())
+        newErrors.instituicao = "Instituição é obrigatória";
     } else if (formData.tipo === "Recrutador") {
-      if (!formData.empresa.trim()) newErrors.empresa = "Empresa é obrigatória"
-      if (!formData.cargo.trim()) newErrors.cargo = "Cargo é obrigatório"
+      if (!formData.empresa.trim()) newErrors.empresa = "Empresa é obrigatória";
+      if (!formData.cargo.trim()) newErrors.cargo = "Cargo é obrigatório";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setIsLoading(true)
-    setSuccessMessage("")
+    setIsLoading(true);
+    setSuccessMessage("");
 
     // Simulação de envio para API
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      setSuccessMessage(isEditing ? "Usuário atualizado com sucesso!" : "Usuário cadastrado com sucesso!")
+      setSuccessMessage(
+        isEditing
+          ? "Usuário atualizado com sucesso!"
+          : "Usuário cadastrado com sucesso!"
+      );
 
       if (!isEditing) {
         // Limpar formulário após cadastro bem-sucedido
@@ -113,15 +120,15 @@ export default function AdminUsuarioForm({ id }) {
           portfolio: "",
           sobre: "",
           status: "Ativo",
-        })
+        });
       }
     } catch (error) {
-      console.error("Erro ao salvar usuário:", error)
-      setErrors({ submit: "Ocorreu um erro ao salvar. Tente novamente." })
+      console.error("Erro ao salvar usuário:", error);
+      setErrors({ submit: "Ocorreu um erro ao salvar. Tente novamente." });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-light">
@@ -130,8 +137,16 @@ export default function AdminUsuarioForm({ id }) {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center">
-            <Link to="/admin/usuarios" className="text-primary hover:text-primary-dark mr-2">
-              <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <Link
+              to="/admin/usuarios"
+              className="text-primary hover:text-primary-dark mr-2"
+            >
+              <svg
+                className="w-5 h-5"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
                 <path
                   fillRule="evenodd"
                   d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
@@ -159,7 +174,14 @@ export default function AdminUsuarioForm({ id }) {
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -175,7 +197,11 @@ export default function AdminUsuarioForm({ id }) {
               <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6">
                 <div className="flex">
                   <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                    <svg
+                      className="h-5 w-5 text-green-500"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
                       <path
                         fillRule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -194,12 +220,17 @@ export default function AdminUsuarioForm({ id }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Informações básicas */}
                 <div className="col-span-1 md:col-span-2">
-                  <h2 className="text-lg font-semibold text-gray-dark mb-4">Informações Básicas</h2>
+                  <h2 className="text-lg font-semibold text-gray-dark mb-4">
+                    Informações Básicas
+                  </h2>
                 </div>
 
                 {/* Nome */}
                 <div>
-                  <label htmlFor="nome" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="nome"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Nome completo <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -213,12 +244,17 @@ export default function AdminUsuarioForm({ id }) {
                     } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                     placeholder="Ex: João Silva"
                   />
-                  {errors.nome && <p className="mt-1 text-sm text-red-500">{errors.nome}</p>}
+                  {errors.nome && (
+                    <p className="mt-1 text-sm text-red-500">{errors.nome}</p>
+                  )}
                 </div>
 
                 {/* E-mail */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     E-mail <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -232,12 +268,17 @@ export default function AdminUsuarioForm({ id }) {
                     } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                     placeholder="Ex: usuario@email.com"
                   />
-                  {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                  )}
                 </div>
 
                 {/* Tipo de usuário */}
                 <div>
-                  <label htmlFor="tipo" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="tipo"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Tipo de usuário <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -254,7 +295,10 @@ export default function AdminUsuarioForm({ id }) {
 
                 {/* Telefone */}
                 <div>
-                  <label htmlFor="telefone" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="telefone"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Telefone
                   </label>
                   <input
@@ -270,7 +314,10 @@ export default function AdminUsuarioForm({ id }) {
 
                 {/* Status */}
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="status"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Status <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -290,12 +337,17 @@ export default function AdminUsuarioForm({ id }) {
                 {formData.tipo === "Estudante" && (
                   <>
                     <div className="col-span-1 md:col-span-2">
-                      <h2 className="text-lg font-semibold text-gray-dark mb-4 mt-4">Informações Acadêmicas</h2>
+                      <h2 className="text-lg font-semibold text-gray-dark mb-4 mt-4">
+                        Informações Acadêmicas
+                      </h2>
                     </div>
 
                     {/* Curso */}
                     <div>
-                      <label htmlFor="curso" className="block text-sm font-medium text-gray-dark mb-1">
+                      <label
+                        htmlFor="curso"
+                        className="block text-sm font-medium text-gray-dark mb-1"
+                      >
                         Curso <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -309,13 +361,21 @@ export default function AdminUsuarioForm({ id }) {
                         } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                         placeholder="Ex: Ciência da Computação"
                       />
-                      {errors.curso && <p className="mt-1 text-sm text-red-500">{errors.curso}</p>}
+                      {errors.curso && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {errors.curso}
+                        </p>
+                      )}
                     </div>
 
                     {/* Instituição */}
                     <div>
-                      <label htmlFor="instituicao" className="block text-sm font-medium text-gray-dark mb-1">
-                        Instituição de Ensino <span className="text-red-500">*</span>
+                      <label
+                        htmlFor="instituicao"
+                        className="block text-sm font-medium text-gray-dark mb-1"
+                      >
+                        Instituição de Ensino{" "}
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -324,16 +384,25 @@ export default function AdminUsuarioForm({ id }) {
                         value={formData.instituicao}
                         onChange={handleChange}
                         className={`block w-full px-3 py-2 border ${
-                          errors.instituicao ? "border-red-500" : "border-gray-medium"
+                          errors.instituicao
+                            ? "border-red-500"
+                            : "border-gray-medium"
                         } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                         placeholder="Ex: USP, UNICAMP, FATEC"
                       />
-                      {errors.instituicao && <p className="mt-1 text-sm text-red-500">{errors.instituicao}</p>}
+                      {errors.instituicao && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {errors.instituicao}
+                        </p>
+                      )}
                     </div>
 
                     {/* GitHub */}
                     <div>
-                      <label htmlFor="github" className="block text-sm font-medium text-gray-dark mb-1">
+                      <label
+                        htmlFor="github"
+                        className="block text-sm font-medium text-gray-dark mb-1"
+                      >
                         GitHub
                       </label>
                       <input
@@ -349,7 +418,10 @@ export default function AdminUsuarioForm({ id }) {
 
                     {/* Portfolio */}
                     <div>
-                      <label htmlFor="portfolio" className="block text-sm font-medium text-gray-dark mb-1">
+                      <label
+                        htmlFor="portfolio"
+                        className="block text-sm font-medium text-gray-dark mb-1"
+                      >
                         Portfolio/Site
                       </label>
                       <input
@@ -369,12 +441,17 @@ export default function AdminUsuarioForm({ id }) {
                 {formData.tipo === "Recrutador" && (
                   <>
                     <div className="col-span-1 md:col-span-2">
-                      <h2 className="text-lg font-semibold text-gray-dark mb-4 mt-4">Informações Profissionais</h2>
+                      <h2 className="text-lg font-semibold text-gray-dark mb-4 mt-4">
+                        Informações Profissionais
+                      </h2>
                     </div>
 
                     {/* Empresa */}
                     <div>
-                      <label htmlFor="empresa" className="block text-sm font-medium text-gray-dark mb-1">
+                      <label
+                        htmlFor="empresa"
+                        className="block text-sm font-medium text-gray-dark mb-1"
+                      >
                         Empresa <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -384,16 +461,25 @@ export default function AdminUsuarioForm({ id }) {
                         value={formData.empresa}
                         onChange={handleChange}
                         className={`block w-full px-3 py-2 border ${
-                          errors.empresa ? "border-red-500" : "border-gray-medium"
+                          errors.empresa
+                            ? "border-red-500"
+                            : "border-gray-medium"
                         } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                         placeholder="Ex: Acme Brasil"
                       />
-                      {errors.empresa && <p className="mt-1 text-sm text-red-500">{errors.empresa}</p>}
+                      {errors.empresa && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {errors.empresa}
+                        </p>
+                      )}
                     </div>
 
                     {/* Cargo */}
                     <div>
-                      <label htmlFor="cargo" className="block text-sm font-medium text-gray-dark mb-1">
+                      <label
+                        htmlFor="cargo"
+                        className="block text-sm font-medium text-gray-dark mb-1"
+                      >
                         Cargo <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -407,14 +493,21 @@ export default function AdminUsuarioForm({ id }) {
                         } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
                         placeholder="Ex: Recrutador, Gerente de RH"
                       />
-                      {errors.cargo && <p className="mt-1 text-sm text-red-500">{errors.cargo}</p>}
+                      {errors.cargo && (
+                        <p className="mt-1 text-sm text-red-500">
+                          {errors.cargo}
+                        </p>
+                      )}
                     </div>
                   </>
                 )}
 
                 {/* LinkedIn */}
                 <div>
-                  <label htmlFor="linkedin" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="linkedin"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     LinkedIn
                   </label>
                   <input
@@ -430,7 +523,10 @@ export default function AdminUsuarioForm({ id }) {
 
                 {/* Sobre */}
                 <div className="col-span-1 md:col-span-2">
-                  <label htmlFor="sobre" className="block text-sm font-medium text-gray-dark mb-1">
+                  <label
+                    htmlFor="sobre"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
                     Sobre
                   </label>
                   <textarea
@@ -493,5 +589,5 @@ export default function AdminUsuarioForm({ id }) {
         )}
       </main>
     </div>
-  )
+  );
 }

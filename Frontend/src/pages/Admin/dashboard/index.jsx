@@ -58,7 +58,7 @@ export default function AdminDashboard() {
   debugger;
   const [vagas, setVagas] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 7;
 
   useEffect(() => {
     api.get("/vagas").then((response) => {
@@ -129,7 +129,9 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-sm text-gray-dark">Total de Vagas</p>
-                <h3 className="text-2xl font-bold text-gray-dark">{vagas.length}</h3>
+                <h3 className="text-2xl font-bold text-gray-dark">
+                  {vagas.length}
+                </h3>
               </div>
             </div>
             <div className="mt-4">
@@ -448,20 +450,49 @@ export default function AdminDashboard() {
           <div className="px-6 py-4 flex justify-between items-center border-t border-gray-medium">
             <div className="text-sm text-gray-dark">
               Mostrando{" "}
-              <span className="font-medium">{indexOfFirstItem + 1}</span> a{" "}
+              <span className="font-medium">{indexOfFirstItem + 1}</span>
+              {" a "}
               <span className="font-medium">
                 {indexOfLastItem > vagas.length
                   ? vagas.length
                   : indexOfLastItem}
               </span>{" "}
-              de <span className="font-medium">{vagas.length}</span>{" "}
-              resultados
+              de <span className="font-medium">{vagas.length}</span> resultados
             </div>
             <div className="flex space-x-2">
-              <button className="px-3 py-1 border border-gray-medium rounded-md text-sm text-gray-dark hover:bg-gray-light">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`px-3 py-1 border border-gray-medium rounded-md text-sm ${
+                  currentPage === 1
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-dark hover:bg-gray-light cursor-pointer"
+                }`}
+              >
                 Anterior
               </button>
-              <button className="px-3 py-1 border border-gray-medium rounded-md text-sm text-gray-dark hover:bg-gray-light">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => handlePageChange(i + 1)}
+                  className={`px-3 py-1 border rounded-md text-sm ${
+                    currentPage === i + 1
+                      ? "bg-primary text-white border-primary"
+                      : "text-gray-dark border-gray-medium hover:bg-gray-light"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`px-3 py-1 border border-gray-medium rounded-md text-sm ${
+                  currentPage === totalPages
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-dark hover:bg-gray-light cursor-pointer"
+                }`}
+              >
                 Próxima
               </button>
             </div>
