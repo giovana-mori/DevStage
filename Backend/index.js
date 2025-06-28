@@ -26,6 +26,7 @@ app.use(express.static('public'));
 app.use("/artigos", routesArtigo);
 app.use("/empresas", routesEmpresa);
 //app.use("/sessao", routesSessao);
+app.use("/users", routesUser);
 app.use("/vagas", routesVaga);
 app.use("/vagasExternas", routesVagaExterna);
 const task = cron.schedule('* 10 * * *', async () => {
@@ -41,7 +42,6 @@ const task = cron.schedule('* 10 * * *', async () => {
     timezone: "America/Sao_Paulo"
 });
 task.execute();
-app.use("/users", routesUser);
 //usar os routes como no ex abaixo
 //app.use("/users", routes);
 
