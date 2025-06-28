@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext, use } from "react";
 import {
   User,
   MapPin,
@@ -21,20 +21,37 @@ import {
   XCircle,
 } from "lucide-react";
 import Header from "../../Component/Header";
+import { Navigate } from "react-router-dom";
+import { Context } from "../../context/UserContext";
 
 export default function Perfil() {
+  const { authenticated, user } = useContext(Context);
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editando, setEditando] = useState(false);
-  const [dadosEdicao, setDadosEdicao] = useState({});
   const [abaSelecionada, setAbaSelecionada] = useState("perfil");
   const [candidaturas, setCandidaturas] = useState([]);
+  const [formUser, setFormUser] = useState(null);
 
   useEffect(() => {
     const carregarDados = async () => {
       setLoading(true);
-      // Simulação de API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      /*
+      {
+          "_id": "685df3f05a906bc77acaa7f6",
+          "nome": "Giovana",
+          "email": "giovana@email.com",
+          "cpf": "123123123",
+          "telefone": "122323232323",
+          "tipo": "admin",
+          "status": "Ativo",
+          "curso": "DSM",
+          "instituicao_ensino": "Fatec",
+          "createdAt": "2025-06-27T01:29:20.464Z",
+          "updatedAt": "2025-06-27T01:29:20.464Z",
+          "__v": 0
+      }
+      */
+      setFormUser(user);
 
       const dadosUsuario = {
         id: 1,
@@ -155,24 +172,27 @@ export default function Perfil() {
       ];
 
       setUsuario(dadosUsuario);
-      setDadosEdicao(dadosUsuario);
       setCandidaturas(dadosCandidaturas);
       setLoading(false);
     };
 
     carregarDados();
-  }, []);
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSalvar = async () => {
     // Simulação de salvamento
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    setUsuario(dadosEdicao);
-    setEditando(false);
-  };
-
-  const handleCancelar = () => {
-    setDadosEdicao(usuario);
-    setEditando(false);
   };
 
   const getStatusColor = (status) => {
@@ -214,15 +234,8 @@ export default function Perfil() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-        </div>
-      </div>
-    );
+  if (!authenticated) {
+    return <Navigate to="/login" />;
   }
 
   return (
@@ -236,7 +249,7 @@ export default function Perfil() {
             <div className="relative">
               <img
                 src={usuario.foto || "/placeholder.svg"}
-                alt={usuario.nome}
+                alt={formUser?.nome}
                 className="w-24 h-24 rounded-full object-cover"
               />
               <button className="absolute -bottom-2 -right-2 bg-purple-600 text-white p-2 rounded-full hover:bg-purple-700 transition-colors">
@@ -248,29 +261,26 @@ export default function Perfil() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-800 mb-1">
-                    {usuario.nome}
+                    {formUser?.nome}
                   </h1>
-                  <p className="text-gray-600 mb-2">{usuario.email}</p>
+                  <p className="text-gray-600 mb-2">{formUser?.email}</p>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
                       {usuario.localizacao}
                     </div>
-                    {usuario.tipo === "estudante" && (
+                    {formUser?.tipo === "estudante" && (
                       <div className="flex items-center gap-1">
                         <GraduationCap className="w-4 h-4" />
-                        {usuario.curso} - {usuario.semestre}
+                        {formUser.curso}
                       </div>
                     )}
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setEditando(!editando)}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                >
+                <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
                   <Edit3 className="w-4 h-4" />
-                  {editando ? "Cancelar" : "Editar Perfil"}
+                  Editar Perfil
                 </button>
               </div>
 
@@ -318,92 +328,45 @@ export default function Perfil() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Nome completo
                       </label>
-                      {editando ? (
-                        <input
-                          type="text"
-                          value={dadosEdicao.nome}
-                          onChange={(e) =>
-                            setDadosEdicao({
-                              ...dadosEdicao,
-                              nome: e.target.value,
-                            })
-                          }
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      ) : (
-                        <p className="p-3 bg-gray-50 rounded-lg">
-                          {usuario.nome}
-                        </p>
-                      )}
+
+                      <input
+                        type="text"
+                        value={formUser.nome}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Email
                       </label>
-                      {editando ? (
-                        <input
-                          type="email"
-                          value={dadosEdicao.email}
-                          onChange={(e) =>
-                            setDadosEdicao({
-                              ...dadosEdicao,
-                              email: e.target.value,
-                            })
-                          }
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      ) : (
-                        <p className="p-3 bg-gray-50 rounded-lg">
-                          {usuario.email}
-                        </p>
-                      )}
+                      <input
+                        type="email"
+                        value={formUser.email}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Telefone
                       </label>
-                      {editando ? (
-                        <input
-                          type="tel"
-                          value={dadosEdicao.telefone}
-                          onChange={(e) =>
-                            setDadosEdicao({
-                              ...dadosEdicao,
-                              telefone: e.target.value,
-                            })
-                          }
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      ) : (
-                        <p className="p-3 bg-gray-50 rounded-lg">
-                          {usuario.telefone}
-                        </p>
-                      )}
+                      <input
+                        type="tel"
+                        value={formUser.telefone}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Localização
                       </label>
-                      {editando ? (
-                        <input
-                          type="text"
-                          value={dadosEdicao.localizacao}
-                          onChange={(e) =>
-                            setDadosEdicao({
-                              ...dadosEdicao,
-                              localizacao: e.target.value,
-                            })
-                          }
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        />
-                      ) : (
-                        <p className="p-3 bg-gray-50 rounded-lg">
-                          {usuario.localizacao}
-                        </p>
-                      )}
+                      <input
+                        type="text"
+                        value={formUser.localizacao}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
                     </div>
                   </div>
                 </div>
@@ -413,23 +376,11 @@ export default function Perfil() {
                   <h2 className="text-xl font-bold text-gray-800 mb-4">
                     Resumo Profissional
                   </h2>
-                  {editando ? (
-                    <textarea
-                      value={dadosEdicao.resumo}
-                      onChange={(e) =>
-                        setDadosEdicao({
-                          ...dadosEdicao,
-                          resumo: e.target.value,
-                        })
-                      }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                      rows={4}
-                    />
-                  ) : (
-                    <p className="p-3 bg-gray-50 rounded-lg leading-relaxed">
-                      {usuario.resumo}
-                    </p>
-                  )}
+                  <textarea
+                    value={formUser.resumo}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    rows={4}
+                  />
                 </div>
 
                 {/* Habilidades */}
@@ -480,24 +431,15 @@ export default function Perfil() {
                   </div>
                 </div>
 
-                {editando && (
-                  <div className="flex gap-4 pt-6 border-t border-gray-200">
-                    <button
-                      onClick={handleSalvar}
-                      className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      <Save className="w-4 h-4" />
-                      Salvar alterações
-                    </button>
-                    <button
-                      onClick={handleCancelar}
-                      className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                      Cancelar
-                    </button>
-                  </div>
-                )}
+                <div className="flex gap-4 pt-6 border-t border-gray-200">
+                  <button
+                    onClick={handleSalvar}
+                    className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <Save className="w-4 h-4" />
+                    Salvar alterações
+                  </button>
+                </div>
               </div>
             )}
 

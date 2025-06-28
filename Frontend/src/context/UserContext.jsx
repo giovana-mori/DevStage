@@ -4,7 +4,6 @@ const Context = createContext();
 function UserProvider({ children }) {
   const { register, login, logout, authenticated, user, loading } = useAuth();
 
-  debugger
   return (
     <Context.Provider value={{ register, login, logout, authenticated, user, loading  }}>
       {children}

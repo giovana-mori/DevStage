@@ -9,6 +9,7 @@ import {
   BookOpen,
   Briefcase,
   Building,
+  Clipboard,
   Eye,
   EyeOff,
   FileText,
@@ -23,7 +24,7 @@ import {
 export default function AdminUsuarioForm() {
   debugger;
   const { id } = useParams();
-  const isEditing = id !== "nova";
+  const isEditing = (id && id !== "novo");
   const { setFlashMessage } = useFlashMessage();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -482,7 +483,7 @@ export default function AdminUsuarioForm() {
                     </div>
 
                     {/* LinkedIn */}
-                    <div>
+                    <div className="mb-6">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         LinkedIn (Opcional)
                       </label>
@@ -497,6 +498,29 @@ export default function AdminUsuarioForm() {
                           className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                           placeholder="Seu perfil do LinkedIn"
                         />
+                      </div>
+                    </div>
+
+                    {/* Curriculo */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Carregar Curriculo (Opcional)
+                      </label>
+                      <div className="relative">
+                        <input
+                          name="curriculo"
+                          value={formData.curriculo}
+                          onChange={handleChange}
+                          className="block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          aria-describedby="file_input_help"
+                          type="file"
+                        />
+                        <p
+                          className="mt-1 text-sm text-gray-500 dark:text-gray-300"
+                          id="file_input_help"
+                        >
+                          SVG, PNG, JPG or GIF (MAX. 800x400px).
+                        </p>
                       </div>
                     </div>
                   </>
