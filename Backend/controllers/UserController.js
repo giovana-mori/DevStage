@@ -164,4 +164,32 @@ export default class UserController {
       return res.status(500).json({ message: "Erro ao obter usuário" });
     }
   }
+
+  static async updateByID(req, res) {
+    try {
+      const { id } = req.params;
+      const user = await User.findById(id);
+
+      if (!user) {
+        return res.status(404).json({ message: "Usuario não encontrada" });
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        id,
+        {
+          ...req.body,
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "Usuario atualizada com sucesso",
+        usuario: updatedUser,
+      });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Erro ao atualizar usuário", error: error.message });
+    }
+  }
 }
