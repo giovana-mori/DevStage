@@ -4,11 +4,29 @@ import { useState, useEffect } from "react";
 import AdminHeader from "../../../../Component/AdminHeader";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import api from "../../../../utils/api";
+import useFlashMessage from "../../../../hooks/useFlashMessage";
+import {
+  BookOpen,
+  Briefcase,
+  Building,
+  Eye,
+  EyeOff,
+  FileText,
+  GitBranch,
+  Linkedin,
+  Lock,
+  Mail,
+  Phone,
+  User,
+} from "lucide-react";
 
 export default function AdminUsuarioForm() {
+  debugger;
   const { id } = useParams();
   const isEditing = id !== "nova";
+  const { setFlashMessage } = useFlashMessage();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   // Estado inicial do formulário
   const [formData, setFormData] = useState({
@@ -36,7 +54,7 @@ export default function AdminUsuarioForm() {
     const carregarUsuario = async () => {
       setIsLoading(true);
       // Simulação de API call
-      await api.get(`/user/${id}`).then((response) => {
+      await api.get(`/users/${id}`).then((response) => {
         //map first item from vaga
         const { user } = response.data;
 
@@ -94,36 +112,27 @@ export default function AdminUsuarioForm() {
     setIsLoading(true);
     setSuccessMessage("");
 
+    let msgText = "Cadastro realizado com sucesso";
+    let msgType = "success";
+
+    console.log(formData);
+
     // Simulação de envio para API
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      api.post(
+        `/users/${isEditing ? "Update/" + formData._id : "Register/"}`,
+        formData
+      );
 
       setSuccessMessage(
         isEditing
-          ? "Usuário atualizado com sucesso!"
-          : "Usuário cadastrado com sucesso!"
+          ? "Usuario atualizada com sucesso!"
+          : "Usuario cadastrada com sucesso!"
       );
-
-      if (!isEditing) {
-        // Limpar formulário após cadastro bem-sucedido
-        setFormData({
-          nome: "",
-          email: "",
-          tipo: "Estudante",
-          curso: "",
-          instituicao: "",
-          empresa: "",
-          cargo: "",
-          telefone: "",
-          linkedin: "",
-          github: "",
-          portfolio: "",
-          sobre: "",
-          status: "Ativo",
-        });
-      }
+      setFlashMessage(msgText, msgType);
+      navigate("/admin/usuarios");
     } catch (error) {
-      console.error("Erro ao salvar usuário:", error);
+      console.error("Erro ao salvar Usuario:", error);
       setErrors({ submit: "Ocorreu um erro ao salvar. Tente novamente." });
     } finally {
       setIsLoading(false);
@@ -218,326 +227,314 @@ export default function AdminUsuarioForm() {
 
             <form onSubmit={handleSubmit} className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Informações básicas */}
-                <div className="col-span-1 md:col-span-2">
-                  <h2 className="text-lg font-semibold text-gray-dark mb-4">
-                    Informações Básicas
-                  </h2>
+                {/* Tipo de Usuário */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de Conta
+                  </label>
+                  <div className="relative">
+                    <select
+                      name="tipo"
+                      value={formData.tipo}
+                      onChange={handleChange}
+                      disabled={isEditing ? true : false}
+                      className={`${
+                        isEditing && "bg-gray-100"
+                      } block w-full pl-3 pr-10 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all`}
+                    >
+                      <option value="estudante">Estudante</option>
+                      <option value="empresa">Empresa</option>
+                    </select>
+                  </div>
                 </div>
-
                 {/* Nome */}
-                <div>
-                  <label
-                    htmlFor="nome"
-                    className="block text-sm font-medium text-gray-dark mb-1"
-                  >
-                    Nome completo <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="nome"
-                    name="nome"
-                    value={formData.nome}
-                    onChange={handleChange}
-                    className={`block w-full px-3 py-2 border ${
-                      errors.nome ? "border-red-500" : "border-gray-medium"
-                    } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
-                    placeholder="Ex: João Silva"
-                  />
-                  {errors.nome && (
-                    <p className="mt-1 text-sm text-red-500">{errors.nome}</p>
-                  )}
-                </div>
+                {formData.tipo === "estudante" ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Nome Completo
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <User className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="nome"
+                          value={formData.nome}
+                          onChange={handleChange}
+                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+                            errors.nome
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="Seu nome completo"
+                        />
+                      </div>
+                      {errors.nome && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.nome}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* CNPJ */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        CNPJ
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Briefcase className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="cnpj"
+                          value={formData.cnpj}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Seu CNPJ"
+                        />
+                      </div>
+                    </div>
 
-                {/* E-mail */}
+                    {/* Razão Social */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Razão Social
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Building className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="razao_social"
+                          value={formData.razao_social}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Sua razão social"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+                {/* Email */}
                 <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-dark mb-1"
-                  >
-                    E-mail <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
                   </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className={`block w-full px-3 py-2 border ${
-                      errors.email ? "border-red-500" : "border-gray-medium"
-                    } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
-                    placeholder="Ex: usuario@email.com"
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+                        errors.email
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                      placeholder="seu@email.com"
+                    />
+                  </div>
                   {errors.email && (
-                    <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                   )}
-                </div>
-
-                {/* Tipo de usuário */}
-                <div>
-                  <label
-                    htmlFor="tipo"
-                    className="block text-sm font-medium text-gray-dark mb-1"
-                  >
-                    Tipo de usuário <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="tipo"
-                    name="tipo"
-                    value={formData.tipo}
-                    onChange={handleChange}
-                    className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                  >
-                    <option value="Estudante">Estudante</option>
-                    <option value="Recrutador">Recrutador</option>
-                  </select>
                 </div>
 
                 {/* Telefone */}
                 <div>
-                  <label
-                    htmlFor="telefone"
-                    className="block text-sm font-medium text-gray-dark mb-1"
-                  >
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Telefone
                   </label>
-                  <input
-                    type="text"
-                    id="telefone"
-                    name="telefone"
-                    value={formData.telefone}
-                    onChange={handleChange}
-                    className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                    placeholder="Ex: (11) 98765-4321"
-                  />
-                </div>
-
-                {/* Status */}
-                <div>
-                  <label
-                    htmlFor="status"
-                    className="block text-sm font-medium text-gray-dark mb-1"
-                  >
-                    Status <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                  >
-                    <option value="Ativo">Ativo</option>
-                    <option value="Inativo">Inativo</option>
-                    <option value="Pendente">Pendente</option>
-                  </select>
-                </div>
-
-                {/* Campos específicos para Estudante */}
-                {formData.tipo === "Estudante" && (
-                  <>
-                    <div className="col-span-1 md:col-span-2">
-                      <h2 className="text-lg font-semibold text-gray-dark mb-4 mt-4">
-                        Informações Acadêmicas
-                      </h2>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Phone className="h-5 w-5 text-gray-400" />
                     </div>
+                    <input
+                      name="telefone"
+                      value={formData.telefone}
+                      onChange={handleChange}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                      placeholder="(00) 00000-0000"
+                    />
+                  </div>
+                </div>
 
+                {/* Senha */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Senha
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`block w-full pl-10 pr-12 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+                        errors.password
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      }`}
+                      placeholder="Crie uma senha segura"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
+
+                {formData.tipo.toLowerCase() === "estudante" && (
+                  <>
                     {/* Curso */}
                     <div>
-                      <label
-                        htmlFor="curso"
-                        className="block text-sm font-medium text-gray-dark mb-1"
-                      >
-                        Curso <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Curso
                       </label>
-                      <input
-                        type="text"
-                        id="curso"
-                        name="curso"
-                        value={formData.curso}
-                        onChange={handleChange}
-                        className={`block w-full px-3 py-2 border ${
-                          errors.curso ? "border-red-500" : "border-gray-medium"
-                        } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
-                        placeholder="Ex: Ciência da Computação"
-                      />
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <BookOpen className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="curso"
+                          value={formData.curso}
+                          onChange={handleChange}
+                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+                            errors.curso
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="Seu curso"
+                        />
+                      </div>
                       {errors.curso && (
-                        <p className="mt-1 text-sm text-red-500">
+                        <p className="mt-1 text-sm text-red-600">
                           {errors.curso}
                         </p>
                       )}
                     </div>
 
-                    {/* Instituição */}
+                    {/* Instituição de Ensino */}
                     <div>
-                      <label
-                        htmlFor="instituicao"
-                        className="block text-sm font-medium text-gray-dark mb-1"
-                      >
-                        Instituição de Ensino{" "}
-                        <span className="text-red-500">*</span>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Instituição de Ensino
                       </label>
-                      <input
-                        type="text"
-                        id="instituicao"
-                        name="instituicao"
-                        value={formData.instituicao}
-                        onChange={handleChange}
-                        className={`block w-full px-3 py-2 border ${
-                          errors.instituicao
-                            ? "border-red-500"
-                            : "border-gray-medium"
-                        } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
-                        placeholder="Ex: USP, UNICAMP, FATEC"
-                      />
-                      {errors.instituicao && (
-                        <p className="mt-1 text-sm text-red-500">
-                          {errors.instituicao}
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Building className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="instituicao_ensino"
+                          value={formData.instituicao_ensino}
+                          onChange={handleChange}
+                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+                            errors.instituicao_ensino
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="Sua instituição de ensino"
+                        />
+                      </div>
+                      {errors.instituicao_ensino && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.instituicao_ensino}
                         </p>
                       )}
                     </div>
 
                     {/* GitHub */}
                     <div>
-                      <label
-                        htmlFor="github"
-                        className="block text-sm font-medium text-gray-dark mb-1"
-                      >
-                        GitHub
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        GitHub (Opcional)
                       </label>
-                      <input
-                        type="text"
-                        id="github"
-                        name="github"
-                        value={formData.github}
-                        onChange={handleChange}
-                        className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Ex: github.com/usuario"
-                      />
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <GitBranch className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="github"
+                          value={formData.github}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Seu perfil do GitHub"
+                        />
+                      </div>
                     </div>
 
-                    {/* Portfolio */}
+                    {/* LinkedIn */}
                     <div>
-                      <label
-                        htmlFor="portfolio"
-                        className="block text-sm font-medium text-gray-dark mb-1"
-                      >
-                        Portfolio/Site
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        LinkedIn (Opcional)
                       </label>
-                      <input
-                        type="text"
-                        id="portfolio"
-                        name="portfolio"
-                        value={formData.portfolio}
-                        onChange={handleChange}
-                        className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Ex: meuportfolio.com"
-                      />
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Linkedin className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="linkedin"
+                          value={formData.linkedin}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Seu perfil do LinkedIn"
+                        />
+                      </div>
                     </div>
                   </>
                 )}
+              </div>
 
-                {/* Campos específicos para Recrutador */}
-                {formData.tipo === "Recrutador" && (
-                  <>
-                    <div className="col-span-1 md:col-span-2">
-                      <h2 className="text-lg font-semibold text-gray-dark mb-4 mt-4">
-                        Informações Profissionais
-                      </h2>
-                    </div>
-
-                    {/* Empresa */}
-                    <div>
-                      <label
-                        htmlFor="empresa"
-                        className="block text-sm font-medium text-gray-dark mb-1"
-                      >
-                        Empresa <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        id="empresa"
-                        name="empresa"
-                        value={formData.empresa}
-                        onChange={handleChange}
-                        className={`block w-full px-3 py-2 border ${
-                          errors.empresa
-                            ? "border-red-500"
-                            : "border-gray-medium"
-                        } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
-                        placeholder="Ex: Acme Brasil"
-                      />
-                      {errors.empresa && (
-                        <p className="mt-1 text-sm text-red-500">
-                          {errors.empresa}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Cargo */}
-                    <div>
-                      <label
-                        htmlFor="cargo"
-                        className="block text-sm font-medium text-gray-dark mb-1"
-                      >
-                        Cargo <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        id="cargo"
-                        name="cargo"
-                        value={formData.cargo}
-                        onChange={handleChange}
-                        className={`block w-full px-3 py-2 border ${
-                          errors.cargo ? "border-red-500" : "border-gray-medium"
-                        } rounded-lg focus:ring-2 focus:ring-primary focus:border-primary`}
-                        placeholder="Ex: Recrutador, Gerente de RH"
-                      />
-                      {errors.cargo && (
-                        <p className="mt-1 text-sm text-red-500">
-                          {errors.cargo}
-                        </p>
-                      )}
-                    </div>
-                  </>
-                )}
-
-                {/* LinkedIn */}
+              {/* Sobre e Portfólio */}
+              <div className="space-y-6">
                 <div>
-                  <label
-                    htmlFor="linkedin"
-                    className="block text-sm font-medium text-gray-dark mb-1"
-                  >
-                    LinkedIn
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sobre você (Opcional)
                   </label>
-                  <input
-                    type="text"
-                    id="linkedin"
-                    name="linkedin"
-                    value={formData.linkedin}
+                  <textarea
+                    name="sobre"
+                    value={formData.sobre}
                     onChange={handleChange}
-                    className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                    placeholder="Ex: linkedin.com/in/usuario"
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    rows="3"
+                    placeholder="Fale um pouco sobre você..."
                   />
                 </div>
 
-                {/* Sobre */}
-                <div className="col-span-1 md:col-span-2">
-                  <label
-                    htmlFor="sobre"
-                    className="block text-sm font-medium text-gray-dark mb-1"
-                  >
-                    Sobre
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Portfólio (Opcional)
                   </label>
-                  <textarea
-                    id="sobre"
-                    name="sobre"
-                    rows="4"
-                    value={formData.sobre}
-                    onChange={handleChange}
-                    className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                    placeholder="Descreva brevemente o usuário..."
-                  ></textarea>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FileText className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      name="portifolio"
+                      value={formData.portifolio}
+                      onChange={handleChange}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                      placeholder="Link do seu portfólio"
+                    />
+                  </div>
                 </div>
               </div>
 

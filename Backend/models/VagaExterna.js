@@ -92,8 +92,7 @@ const vagaExternaSchema = new Schema(
       default: [],
     },
     publicadoEm: {
-      type: Date,
-      default: Date.now,
+      type: String
     },
     ativo: {
       type: Boolean,

@@ -26,26 +26,29 @@ export default class VagaExternaController {
       const vagasExternas = [];
       for (const vaga of vagas) {
         const novaVaga = new VagaExterna({
+          id_: vaga.job_id, 
           titulo: vaga.job_title,
           descricao: vaga.job_description,
-          //responsabilidades: vaga.job_responsibilities,
+          responsabilidades: vaga.job_responsibilities ? vaga.job_responsibilities : "Não informado", 
           requisitos: vaga.job_requirements ? vaga.job_requirements : "Não informado",
           beneficios: vaga.job_benefits ? vaga.job_benefits : "Não informado",
           modalidade: vaga.job_employment_type,
           responsabilidades: vaga.job_responsibilities ? vaga.job_responsibilities : "Não informado",
-          tipoContrato: "Estágio",
+          tipoContrato: "Estágio", //esses dois estão fixos como estagio por padrão da query e por ser o foco do projeto
           nivel: "Estagiário",
-          salario: vaga.job_salary ? vaga.job_salary : "Não informado", // Verifica se o salário está disponível
-          vagasDisponiveis: vaga.num_available_positions ? vaga.num_available_positions : 1, // Definido como 1, pode ser ajustado conforme necessário
-          localizacao: vaga.job_city ? vaga.job_city : "Não informado" + ", " + vaga.job_country,
-          empresa: vaga.employer_name, // Pode ser necessário ajustar conforme o modelo de Empresa
-          email_contato: vaga.job_apply_email ? vaga.job_apply_email : "Não informado", // Email de contato para a vaga
+          salario: vaga.job_salary ? vaga.job_salary : "Não informado",
+          vagasDisponiveis: vaga.num_available_positions ? vaga.num_available_positions : 1,
+          localizacao: vaga.job_city ? vaga.job_city : "Não informado" + ", " + vaga.job_location,
+          empresa: vaga.employer_name,
+          email_contato: vaga.job_apply_email ? vaga.job_apply_email : "Não informado", 
+          publicadoEm: vaga.job_posted_at ? new Date(vaga.job_posted_at) : new Date(), 
           link_candidatura: vaga.job_apply_link, // Link para candidatura
           url: vaga.employer_website, // Link para o site da empresa
         });
 
-        const titulo = novaVaga.titulo;
-        const verificacao = await VagaExterna.findOne({ titulo })
+        // Verifica se a vaga já existe no banco de dados
+        const id = novaVaga.id_;
+        const verificacao = await VagaExterna.findOne({ id })
         if (!verificacao) {
           await novaVaga.save();
           vagasExternas.push(novaVaga);
@@ -145,36 +148,38 @@ export default class VagaExternaController {
   }
 
   static async addCandidato(req, res) {
-    const token = getToken(req);
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
     const user = await getUserByToken(token);
-    const vaga = req.params.id; //id da vaga
+    const vagaId = req.params.id; //id da vaga
     if (!user) {
       return res.status(422).json({ message: "Usuário não logado" });
     }
+
+    // Primeiro verifica se a vaga existe
+    const vaga = await VagaExterna.findById(vagaId);
     if (!vaga) {
-      return res.status(422).json({ message: "Vaga não encontrada" });
+      return res.status(404).json({ message: "Vaga não encontrada" });
     }
+
+    const jaCandidato = vaga.candidatos.some(
+      (candidato) => candidato.usuarioId.toString() === user._id.toString()
+    );
+
+    if (jaCandidato) {
+      return res
+        .status(409)
+        .json({ message: "Usuário já se candidatou a esta vaga" });
+    }
+
     try {
       const addingUser = await VagaExterna.findByIdAndUpdate(
-        vaga,
+        vagaId,
         {
           $addToSet: {
             candidatos: {
-              user: {
-                // informações do usuário sem informações sensíveis
-                _id: user._id,
-                nome: user.nome,
-                email: user.email,
-                telefone: user.telefone,
-                tipo: user.tipo,
-                status: user.status,
-                curso: user.curso,
-                instituicao_ensino: user.instituicao_ensino,
-                github: user.github,
-                linkedin: user.linkedin,
-                sobre: user.sobre,
-                portifolio: user.portifolio,
-              },
+              usuarioId: user._id,
+              cartaApresentacao: req.body.cartaApresentacao || "",
             },
           },
         },
@@ -187,7 +192,7 @@ export default class VagaExternaController {
     } catch (error) {
       return res
         .status(500)
-        .json({ message: "Erro ao adicionar usuário à vaga" });
+        .json({ message: "Erro ao adicionar usuário à vaga", error: error });
     }
   }
 
