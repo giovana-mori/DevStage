@@ -51,6 +51,10 @@ const userSchema = new Schema({
     portifolio: {
         type: String
     },
+    curriculo:{
+        type: String,
+        required: false
+    },
     createdAt: {
         type: Date,
         default: Date.now

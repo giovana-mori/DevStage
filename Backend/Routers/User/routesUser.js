@@ -8,6 +8,7 @@ routesUser.post('/Login', UserController.login);
 routesUser.post('/Update', UserController.update);
 routesUser.get('/', UserController.getUsers);
 routesUser.get('/:id', UserController.getUserByID);
+routesUser.post('/Update/:id', UserController.updateByID);
 
 
 export default routesUser;
