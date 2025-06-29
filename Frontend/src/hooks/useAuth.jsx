@@ -25,7 +25,7 @@ export default function useAuth() {
     let msgText = "Cadastro realizado com sucesso";
     let msgType = "success";
     try {
-      const response = await api.post("users/Registrar", user);
+      const response = await api.post("users/Register", user);
       navigate("/login");
       return response.data;
     } catch (error) {

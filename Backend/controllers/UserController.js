@@ -3,6 +3,12 @@ import Argon2 from "argon2";
 import createUserToken from "../helpers/create-token.js";
 import getToken from "../helpers/get-token.js";
 import getUserByToken from "../helpers/get-user-by-token.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default class UserController {
   static async register(req, res) {
@@ -122,7 +128,8 @@ export default class UserController {
 
   static async update(req, res) {
     try {
-      const token = getToken(req);
+      const authHeader = req.headers["authorization"];
+      const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
       const user = await getUserByToken(token);
       const updatedData = req.body;
       if (!user) {
@@ -209,6 +216,130 @@ export default class UserController {
       res
         .status(500)
         .json({ message: "Erro ao atualizar usuário", error: error.message });
+    }
+  }
+
+  static async perfilByToken(req, res) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+    const user = await getUserByToken(token);
+
+    if (!user)
+      return res.status(404).json({ message: "Usuário não encontrado" });
+
+    try {
+      return res.status(200).json({ user });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Erro ao obter usuário", error: error });
+    }
+  }
+
+  // Upload de currículo
+  static async uploadCurriculo(req, res) {
+    const token = req.headers.authorization.split(" ")[1];
+    const user = await getUserByToken(token); // Implemente esta função!
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
+    }
+    try {
+      // 1. Verificar se o arquivo foi enviado
+      if (!req.files || !req.files.curriculo) {
+        return res.status(400).json({ message: "Nenhum arquivo enviado." });
+      }
+
+      const curriculo = req.files.curriculo;
+
+      // 2. Verificar se é PDF
+      if (curriculo.mimetype !== "application/pdf") {
+        return res
+          .status(400)
+          .json({ message: "Apenas arquivos PDF são permitidos." });
+      }
+
+      // 3. Configurar caminhos
+      const uploadDir = path.join(__dirname, "../public/curriculos");
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      // 4. Gerar nome único
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      const fileName = `curriculo-${uniqueSuffix}${path.extname(
+        curriculo.name
+      )}`;
+      const uploadPath = path.join(uploadDir, fileName);
+
+      // 5. Mover arquivo
+      await curriculo.mv(uploadPath);
+
+      // 6. Construir URL
+      const fileUrl = `${process.env.BASE_URL}/curriculos/${fileName}`;
+
+      // 8. Remover arquivo anterior se existir
+      if (user.curriculo && user.curriculo.url) {
+        const oldFilePath = path.join(
+          uploadDir,
+          path.basename(user.curriculo.url)
+        );
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+
+      // 9. Atualizar usuário
+      user.curriculo = {
+        nome: curriculo.name,
+        tamanho: curriculo.size,
+        dataUpload: new Date(),
+        url: fileUrl,
+      };
+
+      await user.save();
+
+      // 10. Responder
+      return res.status(200).json({
+        message: "Currículo enviado com sucesso!",
+        curriculo: user.curriculo,
+      });
+    } catch (error) {
+      console.error("Erro no upload:", error);
+      return res.status(500).json({
+        message: "Erro ao processar o currículo",
+        error: error.message,
+      });
+    }
+  }
+
+  // Remover currículo
+  static async removerCurriculo(req, res) {
+    try {
+      const authHeader = req.headers["authorization"];
+      const token = authHeader && authHeader.split(" ")[1];
+      const user = await getUserByToken(token);
+
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+
+      // Atualizar o usuário removendo o currículo
+      const updatedUser = await User.findByIdAndUpdate(
+        user._id,
+        { $unset: { curriculo: 1 } },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "Currículo removido com sucesso!",
+        user: updatedUser,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Erro ao remover currículo",
+        error: error.message,
+      });
     }
   }
 }

@@ -5,13 +5,29 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+
 .text-balance {
   text-wrap: balance;
 }
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* Adicione no seu arquivo de estilos */
+.drag-active {
+  border-color: #8b5cf6 !important;
+  background-color: #f5f3ff !important;
+}
+
+.select__multi-value {
+  background-color: #5e17eb;
+}
+
+.select__control {
+  min-height: 50px !important;
 }
 
 @layer utilities {

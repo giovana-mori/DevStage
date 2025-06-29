@@ -204,12 +204,97 @@ export default class VagaController {
       return res.status(422).json({ message: "Vaga não encontrada" });
     }
     try {
-      const listaCandidatos = await Vaga.findById(vaga).select("candidatos");
-      return res.status(200).json({ listaCandidatos });
+      const candidaturas = await Vaga.findById(vaga).select("candidatos");
+      return res.status(200).json({ candidaturas });
     } catch (error) {
       return res
         .status(500)
         .json({ message: "Erro ao obter candidatos da vaga" });
+    }
+  }
+
+  static async getCandidaturas(req, res) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    const user = await getUserByToken(token);
+
+    if (!user) {
+      return res.status(422).json({ message: "Usuário não encontrado" });
+    }
+
+    try {
+      const candidaturas = await Vaga.aggregate([
+        {
+          $match: {
+            "candidatos.usuarioId": user._id,
+          },
+        },
+        // Filtra e transforma candidatos em um único objeto
+        {
+          $addFields: {
+            minhaCandidatura: {
+              $arrayElemAt: [
+                {
+                  $filter: {
+                    input: "$candidatos",
+                    as: "candidato",
+                    cond: {
+                      $eq: [
+                        "$$candidato.usuarioId",
+                        user._id,
+                      ],
+                    },
+                  },
+                },
+                0,
+              ],
+            },
+          },
+        },
+        // Remove o array original de candidatos
+        { $unset: "candidatos" },
+        // Join com empresas
+        {
+          $lookup: {
+            from: "empresas",
+            localField: "empresa",
+            foreignField: "_id",
+            as: "empresa",
+          },
+        },
+        {
+          $unwind: {
+            path: "$empresa",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        // Projeção final
+        {
+          $project: {
+            _id: 1,
+            titulo: 1,
+            descricao: 1,
+            modalidade: 1,
+            localizacao: 1,
+            tipoContrato: 1,
+            nivel: 1,
+            salario: 1,
+            minhaCandidatura: 1,
+            publicadoEm: 1,
+            "empresa.nome": 1,
+            "empresa.logo": 1,
+            "empresa.localizacao": 1,
+            "empresa.descricao": 1,
+          },
+        },
+      ]);
+
+      return res.status(200).json({ candidaturas });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Erro ao obter candidaturas",
+        error: error.message,
+      });
     }
   }
 }
