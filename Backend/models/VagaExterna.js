@@ -24,6 +24,12 @@ const candidatoSchema = new Schema({
 
 const vagaExternaSchema = new Schema(
   {
+    id_: {
+      type: String,
+      required: true,
+      unique: true,
+    }, // <-- ESSENCIAL!
+
     titulo: {
       type: String,
       required: true,
@@ -92,7 +98,7 @@ const vagaExternaSchema = new Schema(
       default: [],
     },
     publicadoEm: {
-      type: String
+      type: String,
     },
     ativo: {
       type: Boolean,

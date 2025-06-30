@@ -3,64 +3,100 @@ import VagaExterna from "../models/VagaExterna.js";
 import getToken from "../helpers/get-token.js";
 import getUserByToken from "../helpers/get-user-by-token.js";
 import axios from "axios";
+import * as cheerio from "cheerio";
+import NodeCache from "node-cache";
+import puppeteer from "puppeteer";
+
+const cache = new NodeCache({ stdTTL: 3600 }); // Cache de 1 hora
 
 export default class VagaExternaController {
   static async importarVagas(req, res) {
     try {
       const key_api = process.env.JSEARCH_API_KEY;
-      const response = await axios.get("https://jsearch.p.rapidapi.com/search", {
-        headers: {
-          'x-rapidapi-key': key_api,
-          'x-rapidapi-host': 'jsearch.p.rapidapi.com'
-        },
-        params: {
-          query: req.query.query || "desenvolvedor",
-          num_pages: req.query.num_pages || "20",
-          country: req.query.country || "br",
-          date_posted: 'all',
-          employment_types: 'INTERN'
-        },
-      });
+      const response = await axios.get(
+        "https://jsearch.p.rapidapi.com/search",
+        {
+          headers: {
+            "x-rapidapi-key": key_api,
+            "x-rapidapi-host": "jsearch.p.rapidapi.com",
+          },
+          params: {
+            query: req.query.query || "desenvolvedor",
+            num_pages: req.query.num_pages || "20",
+            country: req.query.country || "br",
+            date_posted: "all",
+            employment_types: "INTERN",
+          },
+        }
+      );
 
       const vagas = response.data.data;
       const vagasExternas = [];
+
       for (const vaga of vagas) {
         const novaVaga = new VagaExterna({
-          id_: vaga.job_id, 
+          id_: vaga.job_id,
           titulo: vaga.job_title,
           descricao: vaga.job_description,
-          responsabilidades: vaga.job_responsibilities ? vaga.job_responsibilities : "Não informado", 
-          requisitos: vaga.job_requirements ? vaga.job_requirements : "Não informado",
+          responsabilidades: vaga.job_responsibilities
+            ? vaga.job_responsibilities
+            : "Não informado",
+          requisitos: vaga.job_requirements
+            ? vaga.job_requirements
+            : "Não informado",
           beneficios: vaga.job_benefits ? vaga.job_benefits : "Não informado",
           modalidade: vaga.job_employment_type,
-          responsabilidades: vaga.job_responsibilities ? vaga.job_responsibilities : "Não informado",
+          responsabilidades: vaga.job_responsibilities
+            ? vaga.job_responsibilities
+            : "Não informado",
           tipoContrato: "Estágio", //esses dois estão fixos como estagio por padrão da query e por ser o foco do projeto
           nivel: "Estagiário",
           salario: vaga.job_salary ? vaga.job_salary : "Não informado",
-          vagasDisponiveis: vaga.num_available_positions ? vaga.num_available_positions : 1,
-          localizacao: vaga.job_city ? vaga.job_city : "Não informado" + ", " + vaga.job_location,
+          vagasDisponiveis: vaga.num_available_positions
+            ? vaga.num_available_positions
+            : 1,
+          localizacao: vaga.job_city
+            ? vaga.job_city
+            : "Não informado" + ", " + vaga.job_location,
           empresa: vaga.employer_name,
-          email_contato: vaga.job_apply_email ? vaga.job_apply_email : "Não informado", 
-          publicadoEm: vaga.job_posted_at ? new Date(vaga.job_posted_at) : new Date(), 
+          email_contato: vaga.job_apply_email
+            ? vaga.job_apply_email
+            : "Não informado",
+          publicadoEm: vaga.job_posted_at
+            ? new Date(vaga.job_posted_at)
+            : new Date(),
           link_candidatura: vaga.job_apply_link, // Link para candidatura
           url: vaga.employer_website, // Link para o site da empresa
         });
 
         // Verifica se a vaga já existe no banco de dados
         const id = novaVaga.id_;
-        const verificacao = await VagaExterna.findOne({ id })
+        console.log("Tentando encontrar vaga com id_:", id); // Log 1
+        const verificacao = await VagaExterna.findOne({ id_: id });
+        console.log(
+          "Resultado da verificação para id_ " + id + ":",
+          verificacao ? "Encontrada" : "Não encontrada"
+        ); // Log 2
+
         if (!verificacao) {
           await novaVaga.save();
           vagasExternas.push(novaVaga);
         }
       }
       if (vagasExternas.length === 0) {
-        return res.status(404).json({ message: "Nenhuma vaga nova encontrada para importar" });
+        return res
+          .status(404)
+          .json({ message: "Nenhuma vaga nova encontrada para importar" });
       } else {
-        res.status(200).json({ message: "Vagas importadas com sucesso", vagas: vagasExternas });
+        res.status(200).json({
+          message: "Vagas importadas com sucesso",
+          vagas: vagasExternas,
+        });
       }
     } catch (error) {
-      res.status(500).json({ message: "Erro ao importar vagas", error: error.message });
+      res
+        .status(500)
+        .json({ message: "Erro ao importar vagas", error: error.message });
     }
   }
 
@@ -119,12 +155,13 @@ export default class VagaExternaController {
 
   static async getVagaByTitulo(req, res) {
     try {
-      const {titulo} = req.params;
+      const { titulo } = req.params;
       console.log(titulo);
       if (!titulo) {
         return res.status(422).json({ message: "Nome da vaga obrigatório" });
       }
-      const vaga = await VagaExterna.findOne({ titulo }).populate("empresa").sort("-createdAt");
+      const vaga = await VagaExterna.findOne({ titulo })
+        .sort("-createdAt");
       if (!vaga || vaga.length === 0) {
         return res.status(404).json({ message: "Vaga não encontrada" });
       }
@@ -202,7 +239,9 @@ export default class VagaExternaController {
       return res.status(422).json({ message: "Vaga não encontrada" });
     }
     try {
-      const listaCandidatos = await VagaExterna.findById(vaga).select("candidatos");
+      const listaCandidatos = await VagaExterna.findById(vaga).select(
+        "candidatos"
+      );
       return res.status(200).json({ listaCandidatos });
     } catch (error) {
       return res

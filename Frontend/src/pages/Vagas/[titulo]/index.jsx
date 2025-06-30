@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useContext } from "react";
 import {
   MapPin,
@@ -23,7 +21,7 @@ import { Context } from "../../../context/UserContext";
 
 export default function DetalhesVaga() {
   const { authenticated, user, loading } = useContext(Context);
-  const { titulo } = useParams();
+  const { titulo } = useParams(); // O parâmetro da URL continua sendo o título
   const [vaga, setVaga] = useState(null);
   const [candidatando, setCandidatando] = useState(false);
   const [jaCandidatou, setJaCandidatou] = useState(false);
@@ -31,67 +29,141 @@ export default function DetalhesVaga() {
   const [mostrarModalCandidatura, setMostrarModalCandidatura] = useState(false);
   const [cartaApresentacao, setCartaApresentacao] = useState("");
   const { setFlashMessage } = useFlashMessage();
-  
 
-  // Simulação de dados da vaga
   useEffect(() => {
     const carregarVaga = async () => {
-      // Simulação de API call
-      try {
-        const response = await api.get(`/vagas/${titulo}`);
-        const { vaga } = response.data;
-        
+      let fetchedVaga = null;
 
-        if (vaga) setVaga(vaga);
+      // 1. Tentar buscar a vaga interna (do seu sistema)
+      try {
+        const internalResponse = await api.get(`/vagas/${titulo}`); // Seu endpoint existente para vagas internas
+        fetchedVaga = internalResponse.data.vaga;
+        if (fetchedVaga) {
+          // Normalizar o objeto vaga interna para ter campos consistentes
+          fetchedVaga.origem = 'interna';
+          fetchedVaga.empresaNome = fetchedVaga.empresa?.nome || "Não informado";
+          fetchedVaga.empresaLogo = fetchedVaga.empresa?.logo ? process.env.REACT_APP_API + fetchedVaga.empresa.logo : "https://placehold.co/80x80/EEE/31343C";
+          fetchedVaga.candidatosInternos = fetchedVaga.candidatos; // Manter os candidatos internos
+          fetchedVaga.candidatos = fetchedVaga.candidatos?.length || 0; // Contagem de candidatos para exibição
+        }
       } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error("Erro ao carregar vaga:", error);
+        // Se a vaga interna não for encontrada (status 404), continue para a externa
+        if (error.response && error.response.status === 404) {
+          console.log("Vaga interna não encontrada, tentando vagas externas...");
+        } else {
+          console.error("Erro ao carregar vaga interna:", error);
         }
       }
+
+      // 2. Se a vaga interna não foi encontrada, tentar buscar a vaga externa
+      if (!fetchedVaga) {
+        try {
+          // Assumindo que seu endpoint para vagas externas por título é /vagasExternas/titulo/:titulo
+          const externalResponse = await api.get(`/vagasExternas/${titulo}`);
+          fetchedVaga = externalResponse.data.vaga;
+          if (fetchedVaga) {
+            // Normalizar o objeto vaga externa para ter campos consistentes
+            fetchedVaga.origem = 'externa';
+            fetchedVaga.id = fetchedVaga.id_; // Usar id_ como ID principal para vagas externas
+            fetchedVaga.empresaNome = fetchedVaga.empresa || "Não informado"; // 'empresa' já é string
+            fetchedVaga.empresaLogo = "https://placehold.co/80x80/EEE/31343C"; // Placeholder para logo de vagas externas
+            fetchedVaga.candidatos = fetchedVaga.candidatos?.length || 0; // Contagem de candidatos para exibição
+            // Formatar publicadoEm para exibir corretamente se for "Invalid Date"
+            if (fetchedVaga.publicadoEm === "Invalid Date" || !fetchedVaga.publicadoEm) {
+              fetchedVaga.publicadoEm = new Date(); // Usar data atual se for inválida
+            } else {
+              fetchedVaga.publicadoEm = new Date(fetchedVaga.publicadoEm);
+            }
+            // Garantir que responsabilidades, requisitos, beneficios são arrays
+            fetchedVaga.responsabilidades = Array.isArray(fetchedVaga.responsabilidades) ? fetchedVaga.responsabilidades : (fetchedVaga.responsabilidades ? [fetchedVaga.responsabilidades] : []);
+            fetchedVaga.requisitos = Array.isArray(fetchedVaga.requisitos) ? fetchedVaga.requisitos : (fetchedVaga.requisitos ? [fetchedVaga.requisitos] : []);
+            fetchedVaga.beneficios = Array.isArray(fetchedVaga.beneficios) ? fetchedVaga.beneficios : (fetchedVaga.beneficios ? [fetchedVaga.beneficios] : []);
+          }
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            console.log("Vaga externa também não encontrada.");
+          } else {
+            console.error("Erro ao carregar vaga externa:", error);
+          }
+        }
+      }
+
+      setVaga(fetchedVaga);
     };
 
     carregarVaga();
-  }, [titulo]);
+  }, [titulo]); // Dependência no título da URL
 
   useEffect(() => {
-    if (user && vaga) {
-      const candidatura = vaga.candidatos.find(
+    // A lógica de verificação de candidatura só faz sentido para vagas internas,
+    // pois a candidatura para vagas externas é um link direto (link_candidatura).
+    // Adapte esta lógica se você tiver um sistema de "candidatar" para vagas externas também.
+    if (user && vaga && vaga.origem === 'interna') {
+      const candidatura = vaga.candidatosInternos?.find( // Usar candidatosInternos
         (candidatura) => candidatura.usuarioId === user._id
       );
       if (candidatura) {
         setJaCandidatou(true);
         setCartaApresentacao(candidatura.cartaApresentacao);
       }
+    } else {
+      setJaCandidatou(false); // Resetar se não for vaga interna ou usuário não logado
+      setCartaApresentacao("");
     }
   }, [user, vaga]);
 
   const handleCandidatar = async (e) => {
     e.preventDefault();
     setCandidatando(true);
-    const id = vaga._id;
-    console.log(authenticated);
-    try {
-      const response = await api.post(`/vagas/CandidatarVaga/${id}`);
-      const { vaga } = response.data;
-      if (vaga) setVaga(vaga);
-      setJaCandidatou(true);
-    } catch (error) {
-      if (error.name !== "AbortError") {
-        console.error("Erro ao carregar vaga:", error);
+
+    if (vaga.origem === 'externa') {
+      // Redirecionar para o link de candidatura externa
+      if (vaga.link_candidatura) {
+        window.open(vaga.link_candidatura, '_blank');
+        setFlashMessage("Redirecionando para o site da candidatura!", "info");
+      } else {
+        setFlashMessage("Link de candidatura externa não disponível.", "error");
       }
-      setFlashMessage("Voce precisa estar logado para se candidatar.", "error");
+      setCandidatando(false);
+      setMostrarModalCandidatura(false);
+      setCartaApresentacao("");
+      return;
+    }
+
+    // Lógica de candidatura para vagas internas
+    if (!authenticated) {
+      setFlashMessage("Você precisa estar logado para se candidatar.", "error");
+      setCandidatando(false);
+      return;
+    }
+
+    const id = vaga._id; // Usar _id para vagas internas
+    try {
+      const response = await api.post(`/vagas/CandidatarVaga/${id}`, {
+        cartaApresentacao: cartaApresentacao
+      });
+      const { vaga: updatedVaga } = response.data; // Renomear para evitar conflito
+      if (updatedVaga) {
+        setVaga(prevVaga => ({
+          ...prevVaga,
+          candidatosInternos: updatedVaga.candidatos, // Atualizar a lista completa de candidatos
+          candidatos: updatedVaga.candidatos?.length || 0 // Atualizar a contagem
+        }));
+      }
+      setJaCandidatou(true);
+      setFlashMessage("Candidatura enviada com sucesso!", "success");
+    } catch (error) {
+      console.error("Erro ao carregar vaga:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        setFlashMessage(error.response.data.message, "error");
+      } else {
+        setFlashMessage("Erro ao candidatar-se.", "error");
+      }
     } finally {
       setCandidatando(false);
       setMostrarModalCandidatura(false);
       setCartaApresentacao("");
     }
-
-    // Simulação de candidatura
-    // await new Promise((resolve) => setTimeout(resolve, 2000));
-    // setJaCandidatou(true);
-    // setCandidatando(false);
-    // setMostrarModalCandidatura(false);
-    // setCartaApresentacao("");
   };
 
   const toggleFavorito = () => {
@@ -102,7 +174,7 @@ export default function DetalhesVaga() {
     if (navigator.share) {
       navigator.share({
         title: vaga?.titulo,
-        text: `Confira esta vaga: ${vaga?.titulo} na ${vaga?.empresa}`,
+        text: `Confira esta vaga: ${vaga?.titulo} na ${vaga?.empresaNome}`,
         url: window.location.href,
       });
     } else {
@@ -164,12 +236,8 @@ export default function DetalhesVaga() {
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="flex items-start gap-4 mb-4">
                   <img
-                    src={
-                      vaga.empresa?.logo
-                        ? process.env.REACT_APP_API + vaga.empresa.logo
-                        : "https://placehold.co/100x100/EEE/31343C"
-                    }
-                    alt={vaga.empresa.nome}
+                    src={vaga.empresaLogo} // Usar o campo normalizado
+                    alt={vaga.empresaNome} // Usar o campo normalizado
                     className="w-16 h-16 rounded-lg object-contain"
                   />
                   <div className="flex-1">
@@ -177,7 +245,7 @@ export default function DetalhesVaga() {
                       {vaga.titulo}
                     </h1>
                     <p className="text-lg text-purple-600 font-semibold mb-2">
-                      {vaga.empresa.nome}
+                      {vaga.empresaNome} {/* Usar o campo normalizado */}
                     </p>
                     <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                       <div className="flex items-center gap-1">
@@ -197,16 +265,14 @@ export default function DetalhesVaga() {
                   <div className="flex gap-2">
                     <button
                       onClick={toggleFavorito}
-                      className={`p-2 rounded-lg transition-colors ${
-                        favoritada
+                      className={`p-2 rounded-lg transition-colors ${favoritada
                           ? "bg-red-100 text-red-600 hover:bg-red-200"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
+                        }`}
                     >
                       <Heart
-                        className={`w-5 h-5 ${
-                          favoritada ? "fill-current" : ""
-                        }`}
+                        className={`w-5 h-5 ${favoritada ? "fill-current" : ""
+                          }`}
                       />
                     </button>
                     <button
@@ -233,7 +299,7 @@ export default function DetalhesVaga() {
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <Users className="w-4 h-4" />
-                    {vaga.candidatos.length} candidatos
+                    {vaga.candidatos} candidatos {/* Já é a contagem */}
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
@@ -323,15 +389,14 @@ export default function DetalhesVaga() {
                 </div>
               </div>
 
-              {/* Sobre a Empresa */}
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">
-                  Sobre a {vaga.empresa.nome}
-                </h2>
-                <div className="prose prose-gray max-w-none mb-6">
-                  {vaga?.empresa?.descricao
-                    ?.split("\n")
-                    .map((paragrafo, index) => (
+              {/* Sobre a Empresa (aparece apenas para vagas internas) */}
+              {vaga.origem === 'interna' && vaga.empresa && (
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">
+                    Sobre a {vaga.empresaNome}
+                  </h2>
+                  <div className="prose prose-gray max-w-none mb-6">
+                    {vaga.empresa.descricao?.split("\n").map((paragrafo, index) => (
                       <p
                         key={index}
                         className="mb-3 text-gray-600 leading-relaxed"
@@ -339,17 +404,39 @@ export default function DetalhesVaga() {
                         {paragrafo}
                       </p>
                     ))}
-                </div>
+                  </div>
 
-                {vaga?.empresa?.cultura && (
-                  <>
-                    <h3 className="font-semibold text-gray-800 mb-3">
-                      Nossa Cultura
-                    </h3>
-                    <div className="space-y-2">{vaga.empresa.cultura}</div>
-                  </>
-                )}
-              </div>
+                  {vaga.empresa.cultura && (
+                    <>
+                      <h3 className="font-semibold text-gray-800 mb-3">
+                        Nossa Cultura
+                      </h3>
+                      <div className="space-y-2">{vaga.empresa.cultura}</div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Link para site da empresa externa (aparece para vagas externas) */}
+              {vaga.origem === 'externa' && vaga.url && (
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">
+                    Visitar site da {vaga.empresaNome}
+                  </h2>
+                  <p className="text-gray-600 mb-4">
+                    Para mais informações sobre a empresa e outras vagas, visite o site oficial:
+                  </p>
+                  <a
+                    href={vaga.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  >
+                    Ir para o site
+                  </a>
+                </div>
+              )}
+
             </div>
 
             {/* Sidebar */}
@@ -363,7 +450,7 @@ export default function DetalhesVaga() {
                   <div className="text-gray-600">Salário mensal</div>
                 </div>
 
-                {jaCandidatou ? (
+                {jaCandidatou && vaga.origem === 'interna' ? ( // Só mostra "candidatura efetuada" para internas
                   <div className="text-center">
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <CheckCircle className="w-8 h-8 text-green-600" />
@@ -374,7 +461,7 @@ export default function DetalhesVaga() {
                     <p className="text-gray-600 text-sm mb-4">
                       Tudo certo! Agora é só aguardar o contato da empresa.
                     </p>
-                    <button className="w-full bg-gray-100 text-gray-600 py-3 rounded-lg font-semibold">
+                    <button className="w-full bg-gray-100 text-gray-600 py-3 rounded-lg font-semibold cursor-not-allowed">
                       Candidatura enviada
                     </button>
                   </div>
@@ -383,7 +470,7 @@ export default function DetalhesVaga() {
                     onClick={() => setMostrarModalCandidatura(true)}
                     className="w-full bg-gradient-to-r from-purple-600 to-orange-500 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-orange-600 transition-all duration-300 transform hover:scale-105"
                   >
-                    Candidatar-se
+                    {vaga.origem === 'externa' ? "Aplicar no site externo" : "Candidatar-se"}
                   </button>
                 )}
 
@@ -394,12 +481,15 @@ export default function DetalhesVaga() {
                       {vaga.vagasDisponiveis}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Candidatos</span>
-                    <span className="font-semibold">
-                      {vaga.candidatos.length}
-                    </span>
-                  </div>
+                  {/* Candidatos só faz sentido para vagas internas */}
+                  {vaga.origem === 'interna' && (
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Candidatos</span>
+                      <span className="font-semibold">
+                        {vaga.candidatos}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -460,26 +550,32 @@ export default function DetalhesVaga() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl max-w-md w-full p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">
-                Candidatar-se à vaga
+                {vaga.origem === 'externa' ? "Aplicar no site externo" : "Candidatar-se à vaga"}
               </h3>
               <p className="text-gray-600 mb-4">
-                Você está se candidatando para a vaga de{" "}
+                {vaga.origem === 'externa' ? (
+                  `Você será redirecionado para o site externo para se candidatar à vaga de `
+                ) : (
+                  `Você está se candidatando para a vaga de `
+                )}
                 <strong>{vaga.titulo}</strong> na{" "}
-                <strong>{vaga.empresa.nome}</strong>.
+                <strong>{vaga.empresaNome}</strong>.
               </p>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Carta de apresentação (opcional)
-                </label>
-                <textarea
-                  value={cartaApresentacao}
-                  onChange={(e) => setCartaApresentacao(e.target.value)}
-                  placeholder="Conte um pouco sobre você e por que se interessa por esta vaga..."
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                  rows={4}
-                />
-              </div>
+              {vaga.origem === 'interna' && ( // Carta de apresentação só para vagas internas
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Carta de apresentação (opcional)
+                  </label>
+                  <textarea
+                    value={cartaApresentacao}
+                    onChange={(e) => setCartaApresentacao(e.target.value)}
+                    placeholder="Conte um pouco sobre você e por que se interessa por esta vaga..."
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    rows={4}
+                  />
+                </div>
+              )}
 
               <div className="flex gap-3">
                 <button
@@ -502,7 +598,7 @@ export default function DetalhesVaga() {
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      Enviar candidatura
+                      {vaga.origem === 'externa' ? "Redirecionar" : "Enviar candidatura"}
                     </>
                   )}
                 </button>

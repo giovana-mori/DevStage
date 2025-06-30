@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Header from "../../Component/Header";
@@ -8,35 +6,32 @@ import { VagaCard } from "../../Component/VagaCard";
 import { opcoesHabilidades } from "../../utils/habilidades";
 
 export default function Vagas() {
-  //check if exists params
   const [searchParams] = useSearchParams();
-  const query = searchParams.get("search"); // Pega o parametro Search, caso ele exista
+  const query = searchParams.get("search");
 
   const [filtroModalidade, setFiltroModalidade] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
-  const [filtroRequisito, setFiltroRequisito] = useState();
+  const [filtroRequisito, setFiltroRequisito] = useState(""); // Ajustado para string vazia
   const [currentPage, setCurrentPage] = useState(1);
   const [vagas, setVagas] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("Brasil");
   const itemsPerPage = 6;
 
-
-
-  useEffect(() => {
-
-    let queryBuild = query ? "?search=" + query : "";
-    setSearchTerm(query || "");
-    api.get(`/vagas/${queryBuild}`).then((response) => {
-
-      const vagas = response.data.vagas.map((vaga) => {
+  // Função para buscar e combinar as vagas
+  const fetchAndCombineVagas = async (searchQuery = "") => {
+    try {
+      // 1. Buscar vagas internas
+      const internalVagasResponse = await api.get(`/vagas?search=${searchQuery}`);
+      const internalVagas = internalVagasResponse.data.vagas.map((vaga) => {
         return {
           id: vaga._id,
           titulo: vaga.titulo,
-          empresa: vaga.empresa.nome || "Não informado",
-          logo: vaga.empresa.logo ? process.env.REACT_APP_API + vaga.empresa.logo : "https://placehold.co/80x80/EEE/31343C",
+          empresa: vaga.empresa?.nome || "Não informado", // Usar optional chaining para empresa
+          logo: vaga.empresa?.logo ? process.env.REACT_APP_API + vaga.empresa.logo : "https://placehold.co/80x80?text=NO%20IMAGE",
           localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
-          tipo: vaga.modalidade,
+          modalidade: vaga.modalidade, // Manter o campo modalidade separado para filtros
+          tipo: vaga.tipoContrato, // Assumindo que tipoContrato é o "tipo" da vaga interna
           data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {
             day: "2-digit",
             month: "2-digit",
@@ -44,37 +39,64 @@ export default function Vagas() {
           }),
           tags: vaga.requisitos,
           descricao: vaga.descricao,
+          origem: 'interna' // Adicionar uma flag para identificar a origem
         };
       });
-      setVagas(vagas);
-    });
-  }, []);
+
+      // 2. Buscar vagas externas
+      const externalVagasResponse = await api.get(`/vagasExternas?search=${searchQuery}`);
+      const externalVagas = externalVagasResponse.data.vagas.map((vaga) => {
+        // Tratar o "Invalid Date" do `publicadoEm`
+        let publishedDate = vaga.publicadoEm;
+        if (publishedDate === "Invalid Date" || !publishedDate) {
+          publishedDate = new Date(); // Usar a data atual se for inválida
+        } else {
+          publishedDate = new Date(vaga.publicadoEm);
+        }
+
+        return {
+          id: vaga.id_, // Usar id_ para vagas externas para evitar conflito com _id do MongoDB se necessário, ou use vaga._id se forem únicas
+          titulo: vaga.titulo,
+          empresa: vaga.empresa || "Não informado", // 'empresa' já é uma string no modelo externo
+          logo: "https://placehold.co/80x80?text=NO%20IMAGE", // Empresas externas geralmente não têm logo direto na API JSearch
+          localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
+          modalidade: vaga.modalidade, // Manter o campo modalidade separado para filtros
+          tipo: vaga.tipoContrato, // 'tipoContrato' no modelo externo
+          data: publishedDate.toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }),
+          tags: Array.isArray(vaga.requisitos) ? vaga.requisitos : [vaga.requisitos || "Não informado"], // Garantir que tags seja array
+          descricao: vaga.descricao,
+          origem: 'externa', // Adicionar uma flag para identificar a origem
+          link_candidatura: vaga.link_candidatura, // Manter o link de candidatura para vagas externas
+        };
+      });
+
+      // 3. Combinar as vagas
+      const combinedVagas = [...internalVagas, ...externalVagas];
+
+      // Opcional: Ordenar as vagas combinadas pela data de publicação (mais recente primeiro)
+      combinedVagas.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+      setVagas(combinedVagas);
+    } catch (error) {
+      console.error("Erro ao buscar e combinar vagas:", error);
+      setVagas([]); // Limpar vagas em caso de erro
+    }
+  };
+
+  useEffect(() => {
+    const initialQuery = query || "";
+    setSearchTerm(initialQuery);
+    fetchAndCombineVagas(initialQuery);
+  }, [query]); // Adicionado 'query' como dependência para reagir a mudanças de URL
 
   const handleSubmitSearch = (e) => {
     e.preventDefault();
     console.log("Buscar por:", searchTerm, "em", location);
-
-    api.get(`/vagas?search=${searchTerm}`).then((response) => {
-
-      const vagas = response.data.vagas.map((vaga) => {
-        return {
-          id: vaga._id,
-          titulo: vaga.titulo,
-          empresa: vaga.empresa.nome || "Não informado",
-          logo: "https://placehold.co/80x80/EEE/31343C",
-          localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
-          tipo: vaga.modalidade,
-          data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          }),
-          tags: vaga.requisitos,
-          descricao: vaga.descricao,
-        };
-      });
-      setVagas(vagas);
-    });
+    fetchAndCombineVagas(searchTerm);
   };
 
   const clearFilter = () => {
@@ -82,37 +104,15 @@ export default function Vagas() {
     setFiltroTipo("");
     setFiltroRequisito("");
     setSearchTerm("");
-    api.get("/vagas").then((response) => {
-
-      const vagas = response.data.vagas.map((vaga) => {
-        return {
-          id: vaga._id,
-          titulo: vaga.titulo,
-          empresa: vaga.empresa.nome || "Não informado",
-          logo: "https://placehold.co/80x80/EEE/31343C",
-          localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
-          tipo: vaga.modalidade,
-          data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          }),
-          tags: vaga.requisitos,
-          descricao: vaga.descricao,
-        };
-      });
-      setVagas(vagas);
-    });
+    fetchAndCombineVagas(""); // Busca todas as vagas novamente
   };
 
-  debugger
   // Filtrar vagas com base nos filtros selecionados
   const filteredVagas = vagas?.filter(
     (vaga) =>
-      (filtroModalidade === "" ||
-        vaga.localizacao.includes(filtroModalidade)) &&
+      (filtroModalidade === "" || vaga.modalidade === filtroModalidade) && // Usar vaga.modalidade diretamente
       (filtroTipo === "" || vaga.tipo === filtroTipo) &&
-      (filtroRequisito === "" || vaga.tags.includes(filtroRequisito))
+      (filtroRequisito === "" || (Array.isArray(vaga.tags) && vaga.tags.includes(filtroRequisito))) // Verificar se tags é um array
   );
 
   // Paginação
@@ -322,6 +322,17 @@ export default function Vagas() {
                       <span className="ml-2 text-sm text-gray-dark">
                         Trainee
                       </span>
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="tipo"
+                        value="CLT"
+                        checked={filtroTipo === "CLT"}
+                        onChange={() => setFiltroTipo("CLT")}
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-medium rounded"
+                      />
+                      <span className="ml-2 text-sm text-gray-dark">CLT</span>
                     </label>
                   </div>
                 </div>
