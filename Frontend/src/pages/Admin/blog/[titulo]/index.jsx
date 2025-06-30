@@ -153,7 +153,7 @@ export default function AdminBlogPostForm() {
           : "Artigo cadastrada com sucesso!",
         "success"
       );
-      // navigate("/admin/blog");
+      navigate("/admin/blog");
     } catch (error) {
       console.error("Erro ao salvar Artigo:", error);
       setFlashMessage("Erro ao salvar Artigo. Tente novamente.", "error");
