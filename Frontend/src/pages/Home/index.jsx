@@ -9,29 +9,81 @@ import { motion } from "framer-motion";
 
 function Home() {
   const [vagas, setVagas] = useState([]);
-
-  useEffect(() => {
-    api.get("/vagas").then((response) => {
-      
-      const vagas = response.data.vagas.map((vaga) => {
+  // Função para buscar e combinar as vagas
+  const fetchAndCombineVagas = async (searchQuery = "") => {
+    try {
+      // 1. Buscar vagas internas
+      const internalVagasResponse = await api.get(`/vagas?search=${searchQuery}`);
+      const internalVagas = internalVagasResponse.data.vagas.map((vaga) => {
+        const createdAtDate = new Date(vaga.createdAt); // Manter como Date object para ordenação
         return {
           id: vaga._id,
           titulo: vaga.titulo,
-          empresa: vaga.empresa.nome || "Não informado",
-          logo: vaga.empresa.logo ? process.env.REACT_APP_API + vaga.empresa.logo : "https://placehold.co/80x80/EEE/31343C",
+          empresa: vaga.empresa?.nome || "Não informado",
+          logo: vaga.empresa?.logo ? process.env.REACT_APP_API + vaga.empresa.logo : "https://placehold.co/80x80?text=NO%20IMAGE",
           localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
-          tipo: vaga.modalidade,
-          data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {
+          modalidade: vaga.modalidade,
+          tipo: vaga.tipoContrato,
+          data: createdAtDate.toLocaleDateString("pt-BR", { // Campo 'data' para exibição formatada
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
           }),
+          sortDate: createdAtDate, // Campo 'sortDate' para ordenação
           tags: vaga.requisitos,
           descricao: vaga.descricao,
+          origem: 'interna'
         };
       });
-      setVagas(vagas);
-    });
+
+      // 2. Buscar vagas externas
+      const externalVagasResponse = await api.get(`/vagasExternas?search=${searchQuery}`);
+      const externalVagas = externalVagasResponse.data.vagas.map((vaga) => {
+        let publishedDate = vaga.publicadoEm;
+        if (publishedDate === "Invalid Date" || !publishedDate) {
+          publishedDate = new Date();
+        } else {
+          publishedDate = new Date(vaga.publicadoEm); // Já é um Date object, garantir
+        }
+
+        return {
+          id: vaga.id_,
+          titulo: vaga.titulo,
+          empresa: vaga.empresa || "Não informado",
+          logo: "https://placehold.co/80x80?text=NO%20IMAGE",
+          localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
+          modalidade: vaga.modalidade,
+          tipo: vaga.tipoContrato,
+          data: publishedDate.toLocaleDateString("pt-BR", { // Campo 'data' para exibição formatada
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          }),
+          sortDate: publishedDate, // Campo 'sortDate' para ordenação
+          tags: Array.isArray(vaga.requisitos) ? vaga.requisitos : [vaga.requisitos || "Não informado"],
+          descricao: vaga.descricao,
+          origem: 'externa',
+          link_candidatura: vaga.link_candidatura,
+        };
+      });
+
+      // 3. Combinar as vagas
+      const combinedVagas = [...internalVagas, ...externalVagas];
+
+      // Ordenar as vagas combinadas pela data de publicação (mais recente primeiro)
+      // Usar o campo `sortDate` para uma comparação numérica direta de objetos Date
+      combinedVagas.sort((a, b) => b.sortDate.getTime() - a.sortDate.getTime());
+
+
+      setVagas(combinedVagas);
+    } catch (error) {
+      console.error("Erro ao buscar e combinar vagas:", error);
+      setVagas([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchAndCombineVagas("");
   }, []);
 
   const vagasRecentes = vagas.slice(0, 3);

@@ -45,7 +45,7 @@ export default class VagaExternaController {
             ? vaga.job_requirements
             : "Não informado",
           beneficios: vaga.job_benefits ? vaga.job_benefits : "Não informado",
-          modalidade: vaga.job_employment_type,
+          modalidade: vaga.job_is_remote ? "Remoto" : "Presencial",
           responsabilidades: vaga.job_responsibilities
             ? vaga.job_responsibilities
             : "Não informado",

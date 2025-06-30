@@ -51,7 +51,7 @@ app.use("/vagas", routesVaga);
 app.use("/vagasExternas", routesVagaExterna);
 
 const task = cron.schedule(
-  "* 10 * * *",
+  "0 */4 * * *", // Esta é a alteração para rodar 1 vez por hora (no minuto 0)
   async () => {
     try {
       console.log("Iniciando importação de vagas externas...");
