@@ -116,10 +116,7 @@ export default function BlogPost() {
                                     Voltar para o Blog
                                 </Link>
                             </div>
-<<<<<<< HEAD
                             
-=======
->>>>>>> 33d1ef63af88a7efb61a5098c850a9ab9c7ba52a
                             <h1 className="text-3xl md:text-4xl font-bold mb-4">{post.titulo}</h1>
                             <div className="flex items-center">
                                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mr-3">
