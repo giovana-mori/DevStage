@@ -441,7 +441,7 @@ export default class VagaController {
     if (!empresaSelected)
       return res.status(403).json({ message: "Acesso negado" });
 
-    const { vagaId, candidaturaId } = req.body;
+    const { vagaId, candidaturaId, status } = req.body;
 
     //checar se user esta cadastrado na empresa para poder executar esta acao
 
@@ -458,7 +458,7 @@ export default class VagaController {
         return res.status(404).json({ message: "Candidatura não encontrada." });
       }
 
-      candidatura.status = "aprovada";
+      candidatura.status = status;
       await vaga.save();
 
       return res.status(200).json({

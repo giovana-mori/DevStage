@@ -21,7 +21,7 @@ function BlogPostCard({ post }) {
       <div className="p-6">
         <div className="flex items-center mb-2">
           <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">
-            {post.category}
+            {post.categoria}
           </span>
           <span className="mx-2 text-gray-400">•</span>
           <span className="text-xs text-gray-dark">{new Date(post.createdAt).toLocaleDateString("pt-BR", {
@@ -79,10 +79,12 @@ function BlogPostCard({ post }) {
 
 // Componente para exibir um post em destaque
 function FeaturedPost({ post }) {
+  if (!post) return null; // Não renderiza se não houver post em destaque
+
   return (
     <div className="bg-white rounded-xl shadow-soft overflow-hidden mb-8">
       <div className="grid grid-cols-1 md:grid-cols-2">
-        <div className="relative h-64 md:h-full w-full max-h-96">
+        <div className="relative h-64 md:h-full w-full max-h-96 overflow-hidden">
           <img
             src={process.env.REACT_APP_API + post?.imagem_capa || "/placeholder.svg"}
             alt={post?.titulo}
@@ -93,7 +95,7 @@ function FeaturedPost({ post }) {
         <div className="p-6 md:p-8 flex flex-col justify-center">
           <div className="flex items-center mb-3">
             <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
-              {post.category}
+              {post.categoria}
             </span>
             <span className="mx-2 text-gray-400">•</span>
             <span className="text-sm text-gray-dark">{new Date(post.createdAt).toLocaleDateString("pt-BR", {
@@ -153,15 +155,20 @@ export default function Blog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const { setFlashMessage } = useFlashMessage(); // Inicialize o hook
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage] = useState(6); // Você pode ajustar este número
+
+  const { setFlashMessage } = useFlashMessage();
 
   useEffect(() => {
     const fetchArtigos = async () => {
       try {
-        setError(null); // Limpa erros anteriores
-        const response = await api.get("/artigos"); // Endpoint para buscar artigos
-        setBlogPosts(response.data.artigos || []);
-        debugger
+        setError(null);
+        const response = await api.get("/artigos");
+        // Ordena os posts pelo createdAt, do mais novo para o mais antigo, ao carregar
+        const sortedPosts = response.data.artigos.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setBlogPosts(sortedPosts || []);
       } catch (err) {
         console.error("Erro ao carregar artigos:", err);
         setError("Não foi possível carregar os artigos.");
@@ -172,14 +179,18 @@ export default function Blog() {
     };
 
     fetchArtigos();
-  }, []); // Array vazio para rodar apenas uma vez ao montar o componente
+  }, []);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Resetar para a primeira página ao pesquisar
   };
 
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const featuredPost = blogPosts[0];
+  const handleCategoryFilterChange = (category) => {
+    setCategoryFilter(category);
+    setCurrentPage(1); // Resetar para a primeira página ao filtrar
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -191,10 +202,30 @@ export default function Blog() {
     );
   }
 
-  // Filtrar posts por categoria
-  const filteredPosts = categoryFilter
-    ? blogPosts.filter((post) => post.category === categoryFilter)
-    : blogPosts;
+  // Obter o post em destaque (o mais recente)
+  const featuredPost = blogPosts[0];
+  // Obter os posts não-destacados para filtragem e paginação
+  const nonFeaturedPosts = blogPosts.slice(1);
+
+  // Aplicar filtros de busca e categoria aos posts não-destacados
+  const filteredNonFeaturedPosts = nonFeaturedPosts.filter(post => {
+    const matchesCategory = categoryFilter ? post.category === categoryFilter : true;
+    const matchesSearch = searchTerm
+      ? post.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.resumo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      post.autor.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+    return matchesCategory && matchesSearch;
+  });
+
+  // Lógica de Paginação
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = filteredNonFeaturedPosts.slice(indexOfFirstPost, indexOfLastPost);
+
+  const totalPages = Math.ceil(filteredNonFeaturedPosts.length / postsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Obter categorias únicas para o filtro
   const categories = [...new Set(blogPosts.map((post) => post.category))];
@@ -218,6 +249,8 @@ export default function Blog() {
                 type="text"
                 placeholder="Buscar artigos..."
                 className="w-full py-3 px-4 pr-10 rounded-lg text-gray-dark focus:outline-none focus:ring-2 focus:ring-secondary"
+                value={searchTerm} // Conecta o input ao estado searchTerm
+                onChange={handleSearchChange} // Adiciona o manipulador de eventos
               />
               <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
                 <svg
@@ -248,75 +281,58 @@ export default function Blog() {
       {/* Blog Posts */}
       <section className="pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Category Filter */}
 
           {/* Posts Grid */}
+          {currentPosts.length === 0 && !loading && (
+            <div className="bg-white rounded-xl shadow-soft p-8 text-center">
+              <h3 className="text-lg font-semibold text-gray-dark mb-2">
+                Nenhum artigo encontrado
+              </h3>
+              <p className="text-gray-dark mb-4">
+                Ajuste sua busca ou filtros.
+              </p>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPosts.slice(1).map((post) => (
+            {currentPosts.map((post) => (
               <BlogPostCard key={post.id} post={post} />
             ))}
           </div>
           {/* Pagination */}
-          <div className="mt-12 flex justify-center">
-            <nav className="inline-flex rounded-md shadow-sm">
-              <a
-                to="#"
-                className="px-3 py-2 rounded-l-md border border-gray-medium bg-white text-sm font-medium text-gray-dark hover:bg-gray-light"
-              >
-                Anterior
-              </a>
-              <a
-                to="#"
-                className="px-3 py-2 border-t border-b border-gray-medium bg-primary text-sm font-medium text-white"
-              >
-                1
-              </a>
-              <a
-                to="#"
-                className="px-3 py-2 border-t border-b border-gray-medium bg-white text-sm font-medium text-gray-dark hover:bg-gray-light"
-              >
-                2
-              </a>
-              <a
-                to="#"
-                className="px-3 py-2 border-t border-b border-gray-medium bg-white text-sm font-medium text-gray-dark hover:bg-gray-light"
-              >
-                3
-              </a>
-              <a
-                to="#"
-                className="px-3 py-2 rounded-r-md border border-gray-medium bg-white text-sm font-medium text-gray-dark hover:bg-gray-light"
-              >
-                Próxima
-              </a>
-            </nav>
-          </div>
+          {filteredNonFeaturedPosts.length > postsPerPage && (
+            <div className="mt-12 flex justify-center">
+              <nav className="inline-flex rounded-md shadow-sm">
+                <button
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 rounded-l-md border border-gray-medium bg-white text-sm font-medium text-gray-dark hover:bg-gray-light disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Anterior
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => paginate(i + 1)}
+                    className={`px-3 py-2 border-t border-b border-gray-medium text-sm font-medium cursor-pointer ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-white text-gray-dark hover:bg-gray-light'
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 rounded-r-md border border-gray-medium bg-white text-sm font-medium text-gray-dark hover:bg-gray-light disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Próxima
+                </button>
+              </nav>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Newsletter */}
-      <section className="bg-primary py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Inscreva-se em nossa newsletter
-            </h2>
-            <p className="text-white/80 mb-8">
-              Receba as últimas novidades, dicas e oportunidades de estágio
-              diretamente no seu e-mail.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto">
-              <input
-                type="email"
-                placeholder="Seu melhor e-mail"
-                className="flex-1 px-4 py-3 rounded-lg text-gray-dark focus:outline-none focus:ring-2 focus:ring-secondary"
-              />
-              <button className="bg-secondary hover:bg-secondary-dark text-white font-medium py-3 px-6 rounded-lg transition-colors">
-                Inscrever-se
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

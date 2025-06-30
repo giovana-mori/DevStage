@@ -309,7 +309,7 @@ export default function EmpresaDashboard() {
                 >
                   <div className="flex items-center gap-4">
                     <img
-                      src={candidatura.foto || "/placeholder.svg"}
+                      src={candidatura.foto ? process.env.REACT_APP_API + candidatura.foto : "/placeholder.svg"}
                       alt={candidatura.candidato}
                       className="w-10 h-10 rounded-full object-cover"
                     />

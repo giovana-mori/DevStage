@@ -37,6 +37,7 @@ export default function CandidaturasEmpresa() {
         const { vagas } = response.data;
 
         if (vagas) {
+          debugger
           setVagas(vagas);
         }
       });
@@ -56,7 +57,7 @@ export default function CandidaturasEmpresa() {
 
     //promise for two functions
     Promise.all([carregarVaga(), carregarCandidaturas()]).then(() => {
-      
+
       setLoading(false);
     });
   }, []);
@@ -116,30 +117,32 @@ export default function CandidaturasEmpresa() {
   });
 
   const handleStatusChange = (candidaturaId, vagaId, novoStatus) => {
-    try {
-      api
-        .put(`/vagas/AlterarStatusCandidatura/`, {
-          status: novoStatus,
-          vagaId: vagaId,
-          candidaturaId: candidaturaId,
-        })
-        .then((response) => {
-          const { candidatura } = response.data;
-          if (candidatura) {
-            setCandidaturas(
-              candidaturas.map((candidatura) => {
-                if (candidatura.id === candidaturaId) {
-                  candidatura.status = novoStatus;
-                }
-                return candidatura;
-              })
-            );
-          }
-        });
-    } catch (error) {}
-    console.log(
-      `Alterando status da candidatura ${candidaturaId} para ${novoStatus}`
-    );
+    if (window.confirm(`tem certeza que deseja altear o status para ${novoStatus}?`)) {
+      try {
+        api
+          .put(`/vagas/AlterarStatusCandidatura/`, {
+            status: novoStatus,
+            vagaId: vagaId,
+            candidaturaId: candidaturaId,
+          })
+          .then((response) => {
+            const { candidatura } = response.data;
+            if (candidatura) {
+              setCandidaturas(
+                candidaturas.map((candidatura) => {
+                  if (candidatura.id === candidaturaId) {
+                    candidatura.status = novoStatus;
+                  }
+                  return candidatura;
+                })
+              );
+            }
+          });
+      } catch (error) { }
+      console.log(
+        `Alterando status da candidatura ${candidaturaId} para ${novoStatus}`
+      );
+    }
     // Aqui você implementaria a lógica para atualizar o status
   };
 
@@ -233,7 +236,7 @@ export default function CandidaturasEmpresa() {
                 {/* Informações do Candidato */}
                 <div className="flex items-start space-x-4 mb-4 lg:mb-0">
                   <img
-                    src={candidatura.candidato.foto || "/placeholder.svg"}
+                    src={candidatura.candidato.foto ? process.env.REACT_APP_API + candidatura.candidato.foto : "/placeholder.svg"}
                     alt={candidatura.candidato.nome}
                     className="w-12 h-12 rounded-full object-cover"
                   />
@@ -298,70 +301,42 @@ export default function CandidaturasEmpresa() {
                 {/* Ações */}
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Link
-                    to={"#"}
+                    to={`${process.env.REACT_APP_API + candidatura.candidato.curriculoUrl}`}
+                    target="_blank"
                     className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium flex items-center gap-1"
                   >
                     <Paperclip />
                     Ver Curriculo
                   </Link>
 
-                  {candidatura.status === "pendente" && (
-                    <>
-                      <button
-                        onClick={() =>
-                          handleStatusChange(
-                            candidatura.id,
-                            candidatura.vaga.id,
-                            "aprovada"
-                          )
-                        }
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                      >
-                        Aprovar
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleStatusChange(
-                            candidatura.id,
-                            candidatura.vaga.id,
-                            "rejeitada"
-                          )
-                        }
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-                      >
-                        Rejeitar
-                      </button>
-                    </>
-                  )}
-
-                  {candidatura.status === "visualizada" && (
-                    <>
-                      <button
-                        onClick={() =>
-                          handleStatusChange(
-                            candidatura.id,
-                            candidatura.vaga.id,
-                            "aprovada"
-                          )
-                        }
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                      >
-                        Aprovar
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleStatusChange(
-                            candidatura.id,
-                            candidatura.vaga.id,
-                            "rejeitada"
-                          )
-                        }
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-                      >
-                        Rejeitar
-                      </button>
-                    </>
-                  )}
+                  <>
+                    <button
+                      onClick={() =>
+                        handleStatusChange(
+                          candidatura.id,
+                          candidatura.vaga.id,
+                          "aprovada"
+                        )
+                      }
+                      disabled={candidatura.status === "aprovada"}
+                      className={`px-4 py-2 ${candidatura.status === "aprovada" ? "bg-gray-200 cursor-no-drop" : "bg-green-600 hover:bg-green-700 "} text-white rounded-lg transition-colors text-sm font-medium`}
+                    >
+                      Aprovar
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleStatusChange(
+                          candidatura.id,
+                          candidatura.vaga.id,
+                          "rejeitada"
+                        )
+                      }
+                      disabled={candidatura.status === "rejeitada"}
+                      className={`px-4 py-2 ${candidatura.status === "rejeitada" ? "bg-gray-200 cursor-no-drop" : "bg-red-600 hover:bg-red-700 "} text-white rounded-lg transition-colors text-sm font-medium`}
+                    >
+                      Rejeitar
+                    </button>
+                  </>
                 </div>
               </div>
 
