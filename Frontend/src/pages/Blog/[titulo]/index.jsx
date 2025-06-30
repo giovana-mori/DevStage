@@ -273,11 +273,7 @@ export default function BlogPost() {
                                     Voltar para o Blog
                                 </Link>
                             </div>
-                            <div className="flex items-center mb-2">
-                                <span className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full">{post.categoria}</span>
-                                <span className="mx-2 text-white/60">•</span>
-                                <span className="text-sm text-white/80">{post.readTime}</span>
-                            </div>
+                            
                             <h1 className="text-3xl md:text-4xl font-bold mb-4">{post.titulo}</h1>
                             <div className="flex items-center">
                                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mr-3">
