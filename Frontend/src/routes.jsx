@@ -27,6 +27,7 @@ import ProtectedEmpresaRoute from "./utils/ProtectedEmpresaRoute.jsx";
 import EmpresaDashboard from "./pages/Empresa/dashboard/index.jsx";
 import PerfilEmpresa from "./pages/Empresa/perfil/page.jsx";
 import CandidaturasEmpresa from "./pages/Empresa/candidaturas/page.jsx";
+import NotFound from "./pages/Error404/index.jsx";
 
 function AppRoutes() {
   return (
@@ -174,6 +175,10 @@ function AppRoutes() {
                 </ProtectedEmpresaRoute>
               }
             />
+
+
+            {/* Rota 404: ESTA DEVE SER A ÚLTIMA ROTA */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Container>
         <Footer />

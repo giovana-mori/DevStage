@@ -66,6 +66,17 @@ module.exports = {
         medium:
           "0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)",
       },
+      keyframes: {
+        // Define o keyframe 'float'
+        float: {
+          "0%, 100%": { transform: "translateY(0px)" }, // Posição inicial e final
+          "50%": { transform: "translateY(-15px)" }, // Posição no meio da animação (flutuando para cima)
+        },
+      },
+      animation: {
+        // Define a classe de animação 'float-infinite' que usa o keyframe 'float'
+        "float-infinite": "float 3s ease-in-out infinite", // Nome da animação, duração, timing-function, iteração
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

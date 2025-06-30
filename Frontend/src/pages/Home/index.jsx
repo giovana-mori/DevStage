@@ -82,6 +82,49 @@ function Home() {
     }
   };
 
+  const iconsFloat1 = [
+    "csharp.svg",
+    "css.svg",
+    "git.svg",
+    "html5.svg",
+    "java.svg",
+    "nodejs02.svg",
+  ]
+  const iconsFloat2 = [
+    "html5.svg",
+    "java.svg",
+  ]
+  const iconsFloat3 = [
+    "javascript.svg",
+    "react.svg",
+    "mysql.svg",
+  ]
+  const iconsFloat4 = [
+    "javascript.svg",
+    "react.svg",
+    "mysql.svg",
+    "php.svg",
+    "python.svg",
+    "csharp.svg",
+  ]
+  const iconsFloat5 = [
+    "nodejs02.svg",
+    "csharp.svg",
+  ]
+  //  const iconsFloat4 = [
+  //   "csharp.svg",
+  //   "css.svg",
+  //   "git.svg",
+  //   "html5.svg",
+  //   "java.svg",
+  //   "javascript.svg",
+  //   "react.svg",
+  //   "mysql.svg",
+  //   "nodejs02.svg",
+  //   "php.svg",
+  //   "python.svg",
+  // ]
+
   useEffect(() => {
     fetchAndCombineVagas("");
   }, []);
@@ -92,8 +135,31 @@ function Home() {
       <Header />
       {/* Hero Section */}
       <section className="relative bg-purple-light overflow-hidden flex flex-col justify-between">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: .5 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, delay: 1.5 }}
+          className="container mx-auto absolute z-0 inset-0 pointer-events-none flex flex-col items-center justify-between opacity-70">
+          {[iconsFloat1, iconsFloat4].map((images, index) => (
+            <div key={index} className="flex flex-row justify-between w-full h-full">
+              {/* random number 2 or 3 */}
+              {images.map((image, i) => (
+                <div key={i} className={`max-w-12`} style={{
+                  transform: `translate(${Math.ceil(Math.random() * (16 - 13) + 13)}px, ${Math.ceil(Math.random() * (6 - 3) + 3)}px) rotate(${Math.ceil(Math.random() * (26 - (-26)) + 26)}deg)`
+                }}>
+                  <img src={`/icons/${image}`} className={`w-12 h-12 animate-float-infinite`}
+                    style={{
+                      animationDelay: `${Math.random() * 2}s`
+                    }}
+                    alt="" />
+                </div>
+              ))}
+            </div>
+          ))}
+        </motion.div>
         <div className="container flex h-full items-center mx-auto px-4 sm:px-6 lg:px-8 py-12 md:pb-0 md:py-16 relative z-10">
-          <div className="flex flex-col justify-between w-full gap-5 md:flex-row items-center">
+          <div className="flex flex-col justify-between w-full gap-5 md:flex-row items-center z-10">
             <div className="md:w-2/4 mb-10 md:mb-0 max-w-[500px]">
               <motion.div
                 initial={{ opacity: 0, x: "-100%" }}
