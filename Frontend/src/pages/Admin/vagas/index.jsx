@@ -21,7 +21,7 @@ export default function AdminVagas() {
         return {
           id: vaga._id,
           titulo: vaga.titulo,
-          empresa: vaga.empresa.nome || "Não informado",
+          empresa: vaga?.empresa?.nome || "Não informado",
           logo: "https://placehold.co/80x80/EEE/31343C",
           localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
           tipo: vaga.modalidade,

@@ -60,7 +60,7 @@ export default class VagaController {
         sortBy = "-createdAt",
       } = req.query;
 
-      if (empresaSelected) empresa = empresaSelected.titulo;
+      if (empresaSelected) empresa = empresaSelected.nome;
 
       // Construir query dinâmica
       const query = {};

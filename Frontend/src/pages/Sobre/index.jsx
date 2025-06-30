@@ -20,27 +20,27 @@ export default function Sobre() {
       </section>
 
       {/* Nossa História */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white text-justify">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl font-bold text-gray-dark mb-6 text-center">
               Nossa História
             </h2>
-            <div className="prose prose-lg mx-auto text-gray-dark">
-              <p>
+            <div className="prose prose-lg mx-auto text-gray-dark space-y-2">
+              <p className="indent-8">
                 O DevStage nasceu em 2022 a partir da percepção de uma lacuna
                 significativa no mercado: a dificuldade que estudantes de
                 tecnologia enfrentavam para encontrar estágios de qualidade que
                 realmente contribuíssem para seu desenvolvimento profissional.
               </p>
-              <p>
+              <p className="indent-8">
                 Fundado por um grupo de desenvolvedores e educadores apaixonados
                 por tecnologia e educação, o DevStage tem como missão criar uma
                 ponte eficiente entre estudantes talentosos e empresas
                 inovadoras, facilitando o início da carreira de novos
                 desenvolvedores.
               </p>
-              <p>
+              <p className="indent-8"> 
                 Desde o início, nosso foco tem sido não apenas listar vagas, mas
                 criar um ecossistema completo de suporte ao desenvolvimento
                 profissional, com conteúdos educativos, mentoria e uma
@@ -182,7 +182,7 @@ export default function Sobre() {
             <div className="bg-gray-light rounded-xl p-6 text-center">
               <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src="http://localhost:3000/images/2149328341 - Editado.png"
                   alt="Foto de Carlos Mendes"
                   width={96}
                   height={96}
@@ -223,7 +223,7 @@ export default function Sobre() {
             <div className="bg-gray-light rounded-xl p-6 text-center">
               <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src="http://localhost:3000/images/684684684 - Editado.png"
                   alt="Foto de Ana Rodrigues"
                   width={96}
                   height={96}
@@ -266,7 +266,7 @@ export default function Sobre() {
             <div className="bg-gray-light rounded-xl p-6 text-center">
               <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src="http://localhost:3000/images/71449925 - Editado.jpg"
                   alt="Foto de Marcos Silva"
                   width={96}
                   height={96}
@@ -305,7 +305,7 @@ export default function Sobre() {
             <div className="bg-gray-light rounded-xl p-6 text-center">
               <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src="http://localhost:3000/images/681681646 - Editado.jpg"
                   alt="Foto de Juliana Costa"
                   width={96}
                   height={96}

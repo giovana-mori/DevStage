@@ -100,7 +100,7 @@ const blogPosts = [
         date: "02 de Maio, 2023",
         category: "Tecnologia",
         readTime: "7 min de leitura",
-        img: "/placeholder.svg?height=400&width=800",
+        img: "",
         tags: ["JavaScript", "React", "Node.js", "Tecnologia"],
     },
     {
@@ -168,7 +168,7 @@ function RelatedPostCard({ post }) {
     return (
         <div className="bg-white rounded-lg shadow-soft overflow-hidden hover:shadow-medium transition-shadow">
             <div className="relative h-40 w-full">
-                <img src={process.env.REACT_APP_API + post.imagem_capa || "/placeholder.svg"} alt={post.titulo} fill className="object-cover" />
+                <img src={process.env.REACT_APP_API + post?.imagem_capa || "/placeholder.svg"} alt={post.titulo} fill className="object-cover" />
             </div>
             <div className="p-4">
                 <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">{post.categoria}</span>
@@ -308,7 +308,7 @@ export default function BlogPost() {
                     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="max-w-3xl mx-auto">
                             <div className="relative h-80 w-full mb-8 rounded-xl overflow-hidden">
-                                <img src={process.env.REACT_APP_API + post.imagem_capa || "/placeholder.svg"} alt={post.titulo} fill className="object-cover" />
+                                <img src={process.env.REACT_APP_API + post?.imagem_capa || "/placeholder.svg"} alt={post.titulo} fill className="object-cover" />
                             </div>
 
                             <div className="bg-white rounded-xl shadow-soft p-6 md:p-8">

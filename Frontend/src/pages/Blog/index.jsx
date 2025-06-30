@@ -12,8 +12,8 @@ function BlogPostCard({ post }) {
     <div className="bg-white rounded-xl shadow-soft overflow-hidden hover:shadow-medium transition-shadow">
       <div className="relative flex h-48 w-full overflow-hidden">
         <img
-          src={process.env.REACT_APP_API + post.imagem_capa || "/placeholder.svg"}
-          alt={post.titulo}
+          src={process.env.REACT_APP_API + post?.imagem_capa || "/placeholder.svg"}
+          alt={post?.titulo}
           fill
           className="object-cover w-full"
         />
@@ -84,8 +84,8 @@ function FeaturedPost({ post }) {
       <div className="grid grid-cols-1 md:grid-cols-2">
         <div className="relative h-64 md:h-full w-full max-h-96">
           <img
-            src={process.env.REACT_APP_API + post.imagem_capa || "/placeholder.svg"}
-            alt={post.titulo}
+            src={process.env.REACT_APP_API + post?.imagem_capa || "/placeholder.svg"}
+            alt={post?.titulo}
             fill
             className="object-cover w-full"
           />
