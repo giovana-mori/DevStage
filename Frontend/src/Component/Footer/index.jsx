@@ -16,9 +16,8 @@ function Footer() {
                 />
               </div>
             </Link>
-            <p className="mt-2 text-sm text-gray-dark lg:max-w-56">
-              Conectando estudantes às melhores oportunidades de estágio em
-              desenvolvimento de software.
+            <p className="mt-2 pr-5 text-sm text-gray-dark lg:max-w-56">
+              As melhores vagas de estágio em software para estudantes.{" "}
             </p>
           </div>
 
