@@ -18,7 +18,7 @@ function Home() {
           id: vaga._id,
           titulo: vaga.titulo,
           empresa: vaga.empresa.nome || "Não informado",
-          logo: "https://placehold.co/80x80/EEE/31343C",
+          logo: vaga.empresa.logo ? process.env.REACT_APP_API + vaga.empresa.logo : "https://placehold.co/80x80/EEE/31343C",
           localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
           tipo: vaga.modalidade,
           data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {

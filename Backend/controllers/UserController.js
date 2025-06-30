@@ -151,48 +151,9 @@ export default class UserController {
       const authHeader = req.headers["authorization"];
       const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
       const user = await getUserByToken(token);
-      const foto = req?.files?.foto;
       const updatedData = req.body;
-      res.status(201).json({updatedData});
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
-      }
-
-      if (foto) {
-        // 2. Verificar se e uma imagem
-        if (foto.mimetype !== "image/jpeg" && foto.mimetype !== "image/png") {
-          return res
-            .status(400)
-            .json({ message: "Apenas arquivos de imagem são permitidos." });
-        }
-
-        // 3. Configurar caminhos
-        const uploadDir = path.join(__dirname, "../public/fotos");
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        // 4. Gerar nome único
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        const fileName = `foto-${uniqueSuffix}${path.extname(foto.name)}`;
-        const uploadPath = path.join(uploadDir, fileName);
-
-        // 5. Mover arquivo
-        await foto.mv(uploadPath);
-
-        // 6. Construir URL
-        const fileUrl = `/fotos/${fileName}`;
-
-        // 8. Remover arquivo anterior se existir
-        if (user.foto) {
-          const oldFilePath = path.join(uploadDir, path.basename(user.foto));
-          if (fs.existsSync(oldFilePath)) {
-            fs.unlinkSync(oldFilePath);
-          }
-        }
-
-        // 9. Atualizar usuário
-        req.body["foto"] = fileUrl;
       }
 
       // Atualiza os campos do usuário com os dados recebidos
@@ -293,6 +254,71 @@ export default class UserController {
       return res
         .status(500)
         .json({ message: "Erro ao obter usuário", error: error });
+    }
+  }
+
+  static async uploadFoto(req, res) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+    const user = await getUserByToken(token);
+
+    if (!user)
+      return res.status(404).json({ message: "Usuário não encontrado" });
+
+    try {
+      // 1. Verificar se o arquivo foi enviado
+      if (!req.files || !req.files.foto) {
+        return res.status(400).json({ message: "Nenhum arquivo enviado." });
+      }
+
+      const foto = req.files.foto;
+
+      // 2. Verificar se é uma imagem
+      if (foto.mimetype !== "image/jpeg" && foto.mimetype !== "image/png") {
+        return res
+          .status(400)
+          .json({ message: "Apenas arquivos de imagem são permitidos." });
+      }
+
+      // 3. Configurar caminhos
+      const uploadDir = path.join(__dirname, "../public/fotos");
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      // 4. Gerar nome único
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      const fileName = `foto-${uniqueSuffix}${path.extname(foto.name)}`;
+      const uploadPath = path.join(uploadDir, fileName);
+
+      // 5. Mover arquivo
+      await foto.mv(uploadPath);
+
+      // 6. Construir URL
+      const fileUrl = `/fotos/${fileName}`;
+
+      // 8. Remover arquivo anterior se existir
+      if (user.foto) {
+        const oldFilePath = path.join(uploadDir, path.basename(user.foto));
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+
+      // 9. Atualizar usuário
+      user.foto = fileUrl;
+
+      await user.save();
+
+      // 10. Responder
+      return res.status(200).json({
+        message: "Foto enviada com sucesso!",
+        foto: user.foto,
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Erro ao enviar foto", error: error.message });
     }
   }
 

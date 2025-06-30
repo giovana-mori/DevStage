@@ -45,7 +45,7 @@ export default function AdminBlogPostForm() {
   // Simular carregamento de dados para edição
   useEffect(() => {
     const carregarEmpresa = async () => {
-      debugger;
+      
       setIsLoading(true);
       // Simulação de API call
       await api.get(`/artigos/${titulo}`).then((response) => {

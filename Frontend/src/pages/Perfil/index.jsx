@@ -26,6 +26,7 @@ import { Context } from "../../context/UserContext";
 import api from "../../utils/api";
 import Select from "react-select";
 import useFlashMessage from "../../hooks/useFlashMessage";
+import { opcoesHabilidades } from "../../utils/habilidades";
 
 export default function Perfil() {
   const { authenticated } = useContext(Context);
@@ -38,77 +39,6 @@ export default function Perfil() {
   const [formUser, setFormUser] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const opcoesHabilidades = [
-    { value: "JavaScript", label: "JavaScript" },
-    { value: "TypeScript", label: "TypeScript" },
-    { value: "Python", label: "Python" },
-    { value: "Java", label: "Java" },
-    { value: "C#", label: "C#" },
-    { value: "C++", label: "C++" },
-    { value: "Go", label: "Go" },
-    { value: "Ruby", label: "Ruby" },
-    { value: "PHP", label: "PHP" },
-    { value: "Swift", label: "Swift" },
-    { value: "Kotlin", label: "Kotlin" },
-    { value: "Rust", label: "Rust" },
-    { value: "HTML", label: "HTML" },
-    { value: "CSS", label: "CSS" },
-    { value: "Sass", label: "Sass" },
-    { value: "Tailwind CSS", label: "Tailwind CSS" },
-    { value: "Bootstrap", label: "Bootstrap" },
-    { value: "React", label: "React" },
-    { value: "Next.js", label: "Next.js" },
-    { value: "Vue.js", label: "Vue.js" },
-    { value: "Nuxt.js", label: "Nuxt.js" },
-    { value: "Angular", label: "Angular" },
-    { value: "jQuery", label: "jQuery" },
-    { value: "Node.js", label: "Node.js" },
-    { value: "Express", label: "Express" },
-    { value: "NestJS", label: "NestJS" },
-    { value: "Laravel", label: "Laravel" },
-    { value: "Symfony", label: "Symfony" },
-    { value: "Django", label: "Django" },
-    { value: "Flask", label: "Flask" },
-    { value: "Spring Boot", label: "Spring Boot" },
-    { value: ".NET Core", label: ".NET Core" },
-    { value: "RESTful API", label: "RESTful API" },
-    { value: "GraphQL", label: "GraphQL" },
-    { value: "MySQL", label: "MySQL" },
-    { value: "PostgreSQL", label: "PostgreSQL" },
-    { value: "MongoDB", label: "MongoDB" },
-    { value: "SQLite", label: "SQLite" },
-    { value: "Firebase", label: "Firebase" },
-    { value: "Redis", label: "Redis" },
-    { value: "MariaDB", label: "MariaDB" },
-    { value: "Docker", label: "Docker" },
-    { value: "Kubernetes", label: "Kubernetes" },
-    { value: "AWS", label: "AWS" },
-    { value: "Azure", label: "Azure" },
-    { value: "Google Cloud", label: "Google Cloud" },
-    { value: "CI/CD", label: "CI/CD" },
-    { value: "GitHub Actions", label: "GitHub Actions" },
-    { value: "Terraform", label: "Terraform" },
-    { value: "Jest", label: "Jest" },
-    { value: "Mocha", label: "Mocha" },
-    { value: "Cypress", label: "Cypress" },
-    { value: "Selenium", label: "Selenium" },
-    { value: "Playwright", label: "Playwright" },
-    { value: "Testing Library", label: "Testing Library" },
-    { value: "Git", label: "Git" },
-    { value: "GitHub", label: "GitHub" },
-    { value: "Figma", label: "Figma" },
-    { value: "UX/UI Design", label: "UX/UI Design" },
-    { value: "Scrum", label: "Scrum" },
-    { value: "Kanban", label: "Kanban" },
-    { value: "Trello", label: "Trello" },
-    { value: "Notion", label: "Notion" },
-    { value: "Linux", label: "Linux" },
-    { value: "Shell Script", label: "Shell Script" },
-    { value: "React Native", label: "React Native" },
-    { value: "Flutter", label: "Flutter" },
-    { value: "SwiftUI", label: "SwiftUI" },
-    { value: "Kotlin Android", label: "Kotlin Android" },
-  ];
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -144,15 +74,11 @@ export default function Perfil() {
   const handleSalvar = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    debugger;
+    
     // Simulação de envio para API
     try {
       setIsLoading(true);
-      const response = await api.post("/users/Update/", formUser, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await api.post("/users/Update/", formUser);
       setFlashMessage(
         response.data.message || "Perfil atualizado com sucesso!",
         "success"
@@ -229,6 +155,42 @@ export default function Perfil() {
     return Math.round((count / Object.keys(formUser).length) * 100);
   };
 
+  const handleUploadFoto = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Verificar se é imagem
+    if (!file.type.startsWith("image/")) {
+      setFlashMessage("Por favor, selecione uma imagem.", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("foto", file);
+
+    try {
+      setIsUploading(true);
+      const response = await api.post("/users/upload-foto", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Atualiza o estado do usuário com a nova foto
+      setFormUser((prev) => ({
+        ...prev,
+        foto: response.data.foto,
+      }));
+
+      setFlashMessage("Foto enviada com sucesso!", "success");
+    } catch (error) {
+      console.error("Erro ao enviar foto:", error);
+      setFlashMessage("Erro ao enviar foto. Tente novamente.", "error");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // Função para enviar o currículo
   const handleUploadCurriculo = async (e) => {
     const file = e.target.files[0];
@@ -275,7 +237,7 @@ export default function Perfil() {
   };
 
   const handleFileChange = (e) => {
-    debugger;
+    
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFormUser((prev) => ({
@@ -283,6 +245,7 @@ export default function Perfil() {
         foto: file,
       }));
     }
+    handleUploadFoto(e);
   };
 
   // Função para remover o currículo
@@ -327,11 +290,10 @@ export default function Perfil() {
                 <button
                   key={id}
                   onClick={() => handleAba(id)}
-                  className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                    abaSelecionada === id
-                      ? "border-purple-500 text-purple-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${abaSelecionada === id
+                    ? "border-purple-500 text-purple-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    }`}
                 >
                   <Icon className="w-4 h-4" />
                   {label}
@@ -458,7 +420,7 @@ export default function Perfil() {
                         const habilidadesSelecionadas = selectedOptions.map(
                           (opt) => opt.value
                         );
-                        debugger;
+                        
                         setFormUser((prev) => ({
                           ...prev,
                           habilidades: habilidadesSelecionadas,
@@ -565,9 +527,6 @@ export default function Perfil() {
                             {getStatusIcon(candidatura.minhaCandidatura.status)}
                             {getStatusText(candidatura.minhaCandidatura.status)}
                           </span>
-                          <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                            <ExternalLink className="w-4 h-4" />
-                          </button>
                         </div>
                       </div>
 
@@ -575,9 +534,6 @@ export default function Perfil() {
                         <div className="text-sm font-medium text-gray-800">
                           {candidatura.salario}
                         </div>
-                        <button className="text-purple-600 hover:text-purple-700 text-sm font-medium transition-colors">
-                          Ver detalhes
-                        </button>
                       </div>
                     </div>
                   ))}
@@ -646,11 +602,10 @@ export default function Perfil() {
 
                     <label
                       htmlFor="curriculo-upload"
-                      className={`w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center ${
-                        isUploading
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:border-purple-400 hover:bg-purple-50 cursor-pointer"
-                      } transition-colors block`}
+                      className={`w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center ${isUploading
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:border-purple-400 hover:bg-purple-50 cursor-pointer"
+                        } transition-colors block`}
                       disabled={isUploading}
                     >
                       <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
@@ -669,11 +624,10 @@ export default function Perfil() {
                     </h3>
                     <label
                       htmlFor="curriculo-upload"
-                      className={`w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center ${
-                        isUploading
-                          ? "opacity-50 cursor-not-allowed"
-                          : "hover:border-purple-400 hover:bg-purple-50 cursor-pointer"
-                      } transition-colors block`}
+                      className={`w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center ${isUploading
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:border-purple-400 hover:bg-purple-50 cursor-pointer"
+                        } transition-colors block`}
                       disabled={isUploading}
                     >
                       <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />

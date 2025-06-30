@@ -31,7 +31,7 @@ export default function DetalhesVaga() {
   const [mostrarModalCandidatura, setMostrarModalCandidatura] = useState(false);
   const [cartaApresentacao, setCartaApresentacao] = useState("");
   const { setFlashMessage } = useFlashMessage();
-  debugger;
+  
 
   // Simulação de dados da vaga
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function DetalhesVaga() {
       try {
         const response = await api.get(`/vagas/${titulo}`);
         const { vaga } = response.data;
-        debugger;
+        
 
         if (vaga) setVaga(vaga);
       } catch (error) {

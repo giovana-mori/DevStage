@@ -5,33 +5,36 @@ import { Link, useSearchParams } from "react-router-dom";
 import Header from "../../Component/Header";
 import api from "../../utils/api";
 import { VagaCard } from "../../Component/VagaCard";
+import { opcoesHabilidades } from "../../utils/habilidades";
 
 export default function Vagas() {
   //check if exists params
   const [searchParams] = useSearchParams();
   const query = searchParams.get("search"); // Pega o parametro Search, caso ele exista
-  
+
   const [filtroModalidade, setFiltroModalidade] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("");
-  const [filtroArea, setFiltroArea] = useState("");
+  const [filtroRequisito, setFiltroRequisito] = useState();
   const [currentPage, setCurrentPage] = useState(1);
   const [vagas, setVagas] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("Brasil");
   const itemsPerPage = 6;
 
+
+
   useEffect(() => {
-    
+
     let queryBuild = query ? "?search=" + query : "";
     setSearchTerm(query || "");
     api.get(`/vagas/${queryBuild}`).then((response) => {
-      
+
       const vagas = response.data.vagas.map((vaga) => {
         return {
           id: vaga._id,
           titulo: vaga.titulo,
           empresa: vaga.empresa.nome || "Não informado",
-          logo: "https://placehold.co/80x80/EEE/31343C",
+          logo: vaga.empresa.logo ? process.env.REACT_APP_API + vaga.empresa.logo : "https://placehold.co/80x80/EEE/31343C",
           localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
           tipo: vaga.modalidade,
           data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {
@@ -52,7 +55,7 @@ export default function Vagas() {
     console.log("Buscar por:", searchTerm, "em", location);
 
     api.get(`/vagas?search=${searchTerm}`).then((response) => {
-      
+
       const vagas = response.data.vagas.map((vaga) => {
         return {
           id: vaga._id,
@@ -77,10 +80,10 @@ export default function Vagas() {
   const clearFilter = () => {
     setFiltroModalidade("");
     setFiltroTipo("");
-    setFiltroArea("");
+    setFiltroRequisito("");
     setSearchTerm("");
     api.get("/vagas").then((response) => {
-      
+
       const vagas = response.data.vagas.map((vaga) => {
         return {
           id: vaga._id,
@@ -102,13 +105,14 @@ export default function Vagas() {
     });
   };
 
+  debugger
   // Filtrar vagas com base nos filtros selecionados
   const filteredVagas = vagas?.filter(
     (vaga) =>
       (filtroModalidade === "" ||
         vaga.localizacao.includes(filtroModalidade)) &&
       (filtroTipo === "" || vaga.tipo === filtroTipo) &&
-      (filtroArea === "" || vaga.tags.includes(filtroArea))
+      (filtroRequisito === "" || vaga.tags.includes(filtroRequisito))
   );
 
   // Paginação
@@ -325,21 +329,17 @@ export default function Vagas() {
                 {/* Filtro de Área */}
                 <div className="mb-6">
                   <h3 className="text-sm font-semibold text-gray-dark mb-2">
-                    Área
+                    Requisitos
                   </h3>
                   <select
-                    value={filtroArea}
-                    onChange={(e) => setFiltroArea(e.target.value)}
+                    value={filtroRequisito}
+                    onChange={(e) => setFiltroRequisito(e.target.value)}
                     className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
                   >
                     <option value="">Todas as áreas</option>
-                    <option value="React">Front-end (React)</option>
-                    <option value="Node.js">Back-end (Node.js)</option>
-                    <option value="React Native">Mobile</option>
-                    <option value="UI/UX">UI/UX Design</option>
-                    <option value="Docker">DevOps</option>
-                    <option value="Python">Análise de Dados</option>
-                    <option value="Segurança">Segurança da Informação</option>
+                    {opcoesHabilidades.map((item, index) => (
+                      <option key={index} value={item.value}>{item.label}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -387,11 +387,10 @@ export default function Vagas() {
                         <button
                           onClick={() => handlePageChange(currentPage - 1)}
                           disabled={currentPage === 1}
-                          className={`px-3 py-2 rounded-l-md border border-gray-medium ${
-                            currentPage === 1
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              : "bg-white text-gray-dark hover:bg-gray-light"
-                          }`}
+                          className={`px-3 py-2 rounded-l-md border border-gray-medium ${currentPage === 1
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-white text-gray-dark hover:bg-gray-light"
+                            }`}
                         >
                           Anterior
                         </button>
@@ -399,11 +398,10 @@ export default function Vagas() {
                           <button
                             key={i + 1}
                             onClick={() => handlePageChange(i + 1)}
-                            className={`px-3 py-2 border-t border-b border-gray-medium ${
-                              currentPage === i + 1
-                                ? "bg-primary text-white"
-                                : "bg-white text-gray-dark hover:bg-gray-light"
-                            }`}
+                            className={`px-3 py-2 border-t border-b border-gray-medium ${currentPage === i + 1
+                              ? "bg-primary text-white"
+                              : "bg-white text-gray-dark hover:bg-gray-light"
+                              }`}
                           >
                             {i + 1}
                           </button>
@@ -411,11 +409,10 @@ export default function Vagas() {
                         <button
                           onClick={() => handlePageChange(currentPage + 1)}
                           disabled={currentPage === totalPages}
-                          className={`px-3 py-2 rounded-r-md border border-gray-medium ${
-                            currentPage === totalPages
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                              : "bg-white text-gray-dark hover:bg-gray-light"
-                          }`}
+                          className={`px-3 py-2 rounded-r-md border border-gray-medium ${currentPage === totalPages
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-white text-gray-dark hover:bg-gray-light"
+                            }`}
                         >
                           Próxima
                         </button>

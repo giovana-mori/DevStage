@@ -4,6 +4,7 @@ import { Context } from "../../context/UserContext";
 function Header() {
   const { authenticated, logout, user, loading } = useContext(Context);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
   return (
     <div className="pt-16">
       <header className="fixed w-full bg-white shadow-soft top-0 z-50">
@@ -68,7 +69,10 @@ function Header() {
                     className="flex items-center text-sm font-medium text-gray-dark hover:text-primary focus:outline-none"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                   >
-                    <span className="mr-2">Olá, <strong>{user.nome}</strong></span>
+                    <span className="mr-2">Olá, {(user.tipo === "admin" || user.tipo === "empresa")
+                      ? <strong>{user.tipo}</strong>
+                      : <strong>{user.nome}</strong>}
+                    </span>
                     <svg
                       className="h-5 w-5"
                       xmlns="http://www.w3.org/2000/svg"
@@ -86,16 +90,24 @@ function Header() {
                   {/* Dropdown menu */}
                   {isMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1">
-                      <Link
-                        to="/perfil"
-                        className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light"
-                      >
-                        Perfil
-                      </Link>
+                      {(user.tipo === "admin" || user.tipo === "empresa")
+                        ?
+                        <Link to={user.tipo === "admin" ? "/admin" : '/empresa'}
+                          className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light">
+                          Dashboard
+                        </Link>
+                        :
+                        <Link
+                          to="/perfil"
+                          className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light"
+                        >
+                          Perfil
+                        </Link>
+                      }
                       <div className="border-t border-gray-medium my-1"></div>
                       <button
                         onClick={logout}
-                        className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light"
+                        className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light w-full text-left"
                       >
                         Sair
                       </button>
@@ -184,8 +196,8 @@ function Header() {
             </Link>
           </div>
         </div>
-      </header>
-    </div>
+      </header >
+    </div >
   );
 }
 export default Header;

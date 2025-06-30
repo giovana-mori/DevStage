@@ -30,6 +30,7 @@ export default function PerfilEmpresa() {
   const [errors, setErrors] = useState({});
   const { setFlashMessage } = useFlashMessage();
   const { user, authenticated } = useContext(Context);
+  const [isUploading, setIsUploading] = useState(false);
 
   const setores = [
     { value: "Tecnologia", label: "Tecnologia" },
@@ -90,6 +91,42 @@ export default function PerfilEmpresa() {
     }));
   };
 
+  const handleUploadFoto = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Verificar se é imagem
+    if (!file.type.startsWith("image/")) {
+      setFlashMessage("Por favor, selecione uma imagem.", "error");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("logo", file);
+
+    try {
+      setLoading(true);
+      const response = await api.post("/empresas/upload-logo", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Atualiza o estado do usuário com a nova foto
+      setFormData((prev) => ({
+        ...prev,
+        logo: response.data.logo,
+      }));
+
+      setFlashMessage("Foto enviada com sucesso!", "success");
+    } catch (error) {
+      console.error("Erro ao enviar foto:", error);
+      setFlashMessage("Erro ao enviar foto. Tente novamente.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -98,6 +135,7 @@ export default function PerfilEmpresa() {
         logo: file,
       }));
     }
+    handleUploadFoto(e);
   };
 
   const handleSubmit = async (e) => {
@@ -483,49 +521,6 @@ export default function PerfilEmpresa() {
                       {errors.senha_atual}
                     </p>
                   )}
-                </div>
-              </div>
-            </div>
-
-            {/* Status da Conta */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Status da Conta
-              </h2>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div
-                    className={`w-3 h-3 rounded-full ${
-                      formData.status === "Ativo"
-                        ? "bg-green-500"
-                        : "bg-red-500"
-                    }`}
-                  ></div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      Conta {formData.status || "Não informado"}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Sua empresa está{" "}
-                      {formData.status === "Ativo" ? "ativa" : "inativa"} na
-                      plataforma
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-6 text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <Building className="w-4 h-4 mr-1" />
-                    <span>
-                      Empresa{" "}
-                      {formData.status === "Ativo" ? "verificada" : "pendente"}
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 mr-1" />
-                    <span>5 vagas ativas</span>{" "}
-                    {/* Este é um placeholder, ajuste conforme seu backend */}
-                  </div>
                 </div>
               </div>
             </div>

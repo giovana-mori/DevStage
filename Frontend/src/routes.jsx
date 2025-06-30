@@ -10,7 +10,7 @@ import FAQ from "./pages/Faq/index.jsx";
 import Sobre from "./pages/Sobre/index.jsx";
 import Vagas from "./pages/Vagas/index.jsx";
 import Blog from "./pages/Blog/index.jsx";
-import BlogPost from "./pages/Blog/[id]/index.jsx";
+import BlogPost from "./pages/Blog/[titulo]/index.jsx";
 import AdminDashboard from "./pages/Admin/dashboard/index.jsx";
 import AdminVagas from "./pages/Admin/vagas/index.jsx";
 import AdminVagasForm from "./pages/Admin/vagas/[titulo]/index.jsx";
@@ -24,7 +24,7 @@ import Perfil from "./pages/Perfil/index.jsx";
 import DetalhesVaga from "./pages/Vagas/[titulo]/index.jsx";
 import ProtectedAdminRoute from "./utils/ProtectedAdminRoute";
 import ProtectedEmpresaRoute from "./utils/ProtectedEmpresaRoute.jsx";
-import EmpresaDashboard from "./pages/Empresa/dashboard/page.jsx";
+import EmpresaDashboard from "./pages/Empresa/dashboard/index.jsx";
 import PerfilEmpresa from "./pages/Empresa/perfil/page.jsx";
 import CandidaturasEmpresa from "./pages/Empresa/candidaturas/page.jsx";
 
@@ -42,7 +42,7 @@ function AppRoutes() {
             <Route path="/vagas" element={<Vagas />} />
             <Route path="/vagas/:titulo" element={<DetalhesVaga />} />
             <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:id" element={<BlogPost />} />
+            <Route path="/blog/:titulo" element={<BlogPost />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registrar" element={<Register />} />
             <Route

@@ -7,6 +7,8 @@ import api from "../../../../utils/api.jsx";
 import useFlashMessage from "../../../../hooks/useFlashMessage.jsx";
 import EmpresaAsyncSelect from "../../components/EmpresaAsyncSelect.jsx";
 import { Context } from "../../../../context/UserContext.jsx";
+import Select from "react-select";
+import { opcoesHabilidades } from "../../../../utils/habilidades.jsx";
 
 export default function AdminVagasForm() {
   const { titulo } = useParams();
@@ -30,31 +32,31 @@ export default function AdminVagasForm() {
       : "",
     responsabilidades: isEditing
       ? [
-          "Desenvolver e manter aplicações web",
-          "Colaborar com designers",
-          "Participar de code reviews",
-        ].join("\n")
+        "Desenvolver e manter aplicações web",
+        "Colaborar com designers",
+        "Participar de code reviews",
+      ].join("\n")
       : "",
     requisitos: isEditing
       ? [
-          "Conhecimento em HTML, CSS e JavaScript",
-          "Conhecimento básico em React",
-          "Conhecimento básico em Git",
-        ].join("\n")
+        "Conhecimento em HTML, CSS e JavaScript",
+        "Conhecimento básico em React",
+        "Conhecimento básico em Git",
+      ].join("\n")
       : "",
     diferenciais: isEditing
       ? [
-          "Experiência com TypeScript",
-          "Conhecimento em Docker",
-          "Experiência com metodologias ágeis",
-        ].join("\n")
+        "Experiência com TypeScript",
+        "Conhecimento em Docker",
+        "Experiência com metodologias ágeis",
+      ].join("\n")
       : "",
     beneficios: isEditing
       ? [
-          "Plano de saúde e odontológico",
-          "Vale refeição",
-          "Auxílio home office",
-        ].join("\n")
+        "Plano de saúde e odontológico",
+        "Vale refeição",
+        "Auxílio home office",
+      ].join("\n")
       : "",
     email_contato: isEditing ? "rh@acmebrasil.com.br" : "",
     link_candidatura: isEditing
@@ -434,19 +436,25 @@ export default function AdminVagasForm() {
                   htmlFor="requisitos"
                   className="block text-sm font-medium text-gray-dark mb-1"
                 >
-                  Requisitos (uma por linha){" "}
+                  Requisitos
                   <span className="text-red-500">*</span>
                 </label>
-                <textarea
-                  id="requisitos"
-                  name="requisitos"
-                  value={formData.requisitos}
-                  onChange={handleChange}
-                  required
-                  rows={5}
-                  className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                  placeholder="Graduação em Ciência da Computação..."
-                ></textarea>
+                <Select
+                  isMulti
+                  options={opcoesHabilidades}
+                  value={opcoesHabilidades.filter((opt) =>
+                    (formData.requisitos || "").split("\n").includes(opt.value)
+                  )}
+                  onChange={(selectedOptions) => {
+                    const requisitosSelecionados = selectedOptions.map((opt) => opt.value);
+                    setFormData((prev) => ({
+                      ...prev,
+                      requisitos: requisitosSelecionados.join("\n"),
+                    }));
+                  }}
+                  className="w-full rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  classNamePrefix="select"
+                />
               </div>
 
               {/* Diferenciais */}
@@ -474,15 +482,13 @@ export default function AdminVagasForm() {
                   htmlFor="beneficios"
                   className="block text-sm font-medium text-gray-dark mb-1"
                 >
-                  Benefícios (uma por linha){" "}
-                  <span className="text-red-500">*</span>
+                  Benefícios (uma por linha)
                 </label>
                 <textarea
                   id="beneficios"
                   name="beneficios"
                   value={formData.beneficios}
                   onChange={handleChange}
-                  required
                   rows={5}
                   className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   placeholder="Plano de saúde e odontológico..."

@@ -53,25 +53,25 @@ function Register() {
     const requiredFields =
       user.tipo === "estudante"
         ? [
-            "nome",
-            "email",
-            "password",
-            "tipo",
-            "cpf",
-            "status",
-            "curso",
-            "instituicao_ensino",
-          ]
+          "nome",
+          "email",
+          "password",
+          "tipo",
+          "cpf",
+          "status",
+          "curso",
+          "instituicao_ensino",
+        ]
         : [
-            "razao_social",
-            "email",
-            "password",
-            "tipo",
-            "status",
-            "cnpj",
-            "localizacao",
-            "site",
-          ];
+          "razao_social",
+          "email",
+          "password",
+          "tipo",
+          "status",
+          "cnpj",
+          "localizacao",
+          "site",
+        ];
 
     requiredFields.forEach((field) => {
       if (!user[field]) newErrors[field] = "Campo obrigatório";
@@ -95,6 +95,7 @@ function Register() {
 
     setIsLoading(true);
     try {
+      if (user.tipo !== "estudante") user.cpf = user.cnpj
       await register(user);
     } catch (error) {
       setErrors({
@@ -156,11 +157,10 @@ function Register() {
                           name="nome"
                           value={user.nome}
                           onChange={handleChange}
-                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
-                            errors.nome
+                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${errors.nome
                               ? "border-red-300 bg-red-50"
                               : "border-gray-300"
-                          }`}
+                            }`}
                           placeholder="Seu nome completo"
                         />
                       </div>
@@ -307,11 +307,10 @@ function Register() {
                       name="email"
                       value={user.email}
                       onChange={handleChange}
-                      className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
-                        errors.email
+                      className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${errors.email
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
-                      }`}
+                        }`}
                       placeholder="seu@email.com"
                     />
                   </div>
@@ -358,11 +357,10 @@ function Register() {
                       name="password"
                       value={user.password}
                       onChange={handleChange}
-                      className={`block w-full pl-10 pr-12 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
-                        errors.password
+                      className={`block w-full pl-10 pr-12 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${errors.password
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
-                      }`}
+                        }`}
                       placeholder="Crie uma senha segura"
                     />
                     <button
@@ -399,11 +397,10 @@ function Register() {
                           name="curso"
                           value={user.curso}
                           onChange={handleChange}
-                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
-                            errors.curso
+                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${errors.curso
                               ? "border-red-300 bg-red-50"
                               : "border-gray-300"
-                          }`}
+                            }`}
                           placeholder="Seu curso"
                         />
                       </div>
@@ -427,11 +424,10 @@ function Register() {
                           name="instituicao_ensino"
                           value={user.instituicao_ensino}
                           onChange={handleChange}
-                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
-                            errors.instituicao_ensino
+                          className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${errors.instituicao_ensino
                               ? "border-red-300 bg-red-50"
                               : "border-gray-300"
-                          }`}
+                            }`}
                           placeholder="Sua instituição de ensino"
                         />
                       </div>

@@ -20,7 +20,7 @@ const EmpresaAsyncSelect = ({
 
   const loadEmpresas = useCallback(
     debounce(async (inputValue, callback) => {
-      
+
       try {
         setIsLoading(true);
         const res = await api.get(`/empresas/?search=${inputValue}`);
@@ -74,9 +74,7 @@ const EmpresaAsyncSelect = ({
         onChange={(selected) => onChange(selected?.value || null)}
         placeholder={placeholder}
         noOptionsMessage={({ inputValue }) =>
-          inputValue.length < 3
-            ? "Digite pelo menos 3 caracteres"
-            : "Nenhuma empresa encontrada"
+          !inputValue ? "Digite algo para buscar" : "Nenhuma empresa encontrada"
         }
         loadingMessage={() => "Carregando..."}
         classNamePrefix="select"

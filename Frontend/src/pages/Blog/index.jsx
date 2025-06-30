@@ -1,102 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../../Component/Header/index.jsx";
-
-// Dados de exemplo para os posts do blog
-const blogPosts = [
-  {
-    id: 1,
-    title: "Como se preparar para entrevistas técnicas de estágio",
-    excerpt:
-      "Dicas práticas para se destacar em entrevistas técnicas e conquistar a vaga de estágio dos seus sonhos.",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl.",
-    author: "Ana Rodrigues",
-    authorRole: "Recrutadora Senior",
-    date: "15 de Maio, 2023",
-    category: "Carreira",
-    readTime: "5 min de leitura",
-    image: "https://placehold.co/600x400/EEE/31343C",
-    tags: ["Entrevista", "Estágio", "Carreira"],
-  },
-  {
-    id: 2,
-    title: "Tecnologias mais requisitadas para estágios em 2023",
-    excerpt:
-      "Conheça as tecnologias e habilidades mais valorizadas pelas empresas para vagas de estágio em desenvolvimento.",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl.",
-    author: "Carlos Mendes",
-    authorRole: "Tech Lead",
-    date: "02 de Maio, 2023",
-    category: "Tecnologia",
-    readTime: "7 min de leitura",
-    image: "https://placehold.co/600x400/EEE/31343C",
-    tags: ["JavaScript", "React", "Node.js", "Tecnologia"],
-  },
-  {
-    id: 3,
-    title: "Como montar um portfólio de projetos para estágio",
-    excerpt:
-      "Aprenda a criar um portfólio de projetos que chame a atenção dos recrutadores, mesmo sem experiência profissional.",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl.",
-    author: "Mariana Costa",
-    authorRole: "UX Designer",
-    date: "25 de Abril, 2023",
-    category: "Portfólio",
-    readTime: "6 min de leitura",
-    image: "https://placehold.co/600x400/EEE/31343C",
-    tags: ["Portfólio", "Projetos", "GitHub"],
-  },
-  {
-    id: 4,
-    title: "Dicas para equilibrar estágio e faculdade",
-    excerpt:
-      "Estratégias para gerenciar seu tempo e manter um bom desempenho tanto no estágio quanto nos estudos.",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl.",
-    author: "Pedro Alves",
-    authorRole: "Estudante e Estagiário",
-    date: "18 de Abril, 2023",
-    category: "Produtividade",
-    readTime: "4 min de leitura",
-    image: "https://placehold.co/600x400/EEE/31343C",
-    tags: ["Produtividade", "Estudo", "Equilíbrio"],
-  },
-  {
-    id: 5,
-    title: "O que as empresas buscam em estagiários de desenvolvimento?",
-    excerpt:
-      "Descubra quais são as habilidades técnicas e comportamentais mais valorizadas pelos recrutadores.",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl.",
-    author: "Juliana Martins",
-    authorRole: "Gerente de RH",
-    date: "10 de Abril, 2023",
-    category: "Carreira",
-    readTime: "8 min de leitura",
-    image: "https://placehold.co/600x400/EEE/31343C",
-    tags: ["Soft Skills", "Recrutamento", "Carreira"],
-  },
-  {
-    id: 6,
-    title: "Como criar um currículo eficiente para vagas de estágio",
-    excerpt:
-      "Aprenda a destacar suas habilidades e experiências acadêmicas para criar um currículo que chame a atenção.",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl. Sed euismod, nisl vel ultricies lacinia, nisl nisl aliquam nisl, eu aliquam nisl nisl sit amet nisl.",
-    author: "Roberto Almeida",
-    authorRole: "Consultor de Carreira",
-    date: "05 de Abril, 2023",
-    category: "Currículo",
-    readTime: "5 min de leitura",
-    image: "https://placehold.co/600x400/EEE/31343C",
-    tags: ["Currículo", "LinkedIn", "Carreira"],
-  },
-];
+import useFlashMessage from "../../hooks/useFlashMessage.jsx";
+import api from "../../utils/api.jsx";
 
 // Componente para exibir um card de post do blog
 function BlogPostCard({ post }) {
@@ -104,8 +12,8 @@ function BlogPostCard({ post }) {
     <div className="bg-white rounded-xl shadow-soft overflow-hidden hover:shadow-medium transition-shadow">
       <div className="relative flex h-48 w-full overflow-hidden">
         <img
-          src={post.image || "/placeholder.svg"}
-          alt={post.title}
+          src={process.env.REACT_APP_API + post.imagem_capa || "/placeholder.svg"}
+          alt={post.titulo}
           fill
           className="object-cover w-full"
         />
@@ -116,17 +24,21 @@ function BlogPostCard({ post }) {
             {post.category}
           </span>
           <span className="mx-2 text-gray-400">•</span>
-          <span className="text-xs text-gray-dark">{post.readTime}</span>
+          <span className="text-xs text-gray-dark">{new Date(post.createdAt).toLocaleDateString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          })}</span>
         </div>
         <h3 className="text-xl font-bold text-gray-dark mb-2 line-clamp-2">
-          {post.title}
+          {post.titulo}
         </h3>
-        <p className="text-gray-dark mb-4 line-clamp-3">{post.excerpt}</p>
+        <p className="text-gray-dark mb-4 line-clamp-3">{post.resumo}</p>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-2">
               <span className="text-primary font-bold text-xs">
-                {post.author
+                {post.autor
                   .split(" ")
                   .map((n) => n[0])
                   .join("")
@@ -136,13 +48,13 @@ function BlogPostCard({ post }) {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-dark">
-                {post.author}
+                {post.autor}
               </p>
               <p className="text-xs text-gray-500">{post.date}</p>
             </div>
           </div>
           <Link
-            to={`/blog/${post.id}`}
+            to={`/blog/${post.titulo}`}
             className="text-primary hover:text-primary-dark text-sm font-medium flex items-center"
           >
             Ler mais
@@ -170,10 +82,10 @@ function FeaturedPost({ post }) {
   return (
     <div className="bg-white rounded-xl shadow-soft overflow-hidden mb-8">
       <div className="grid grid-cols-1 md:grid-cols-2">
-        <div className="relative h-64 md:h-full w-full">
+        <div className="relative h-64 md:h-full w-full max-h-96">
           <img
-            src={post.image || "/placeholder.svg"}
-            alt={post.title}
+            src={process.env.REACT_APP_API + post.imagem_capa || "/placeholder.svg"}
+            alt={post.titulo}
             fill
             className="object-cover w-full"
           />
@@ -184,17 +96,21 @@ function FeaturedPost({ post }) {
               {post.category}
             </span>
             <span className="mx-2 text-gray-400">•</span>
-            <span className="text-sm text-gray-dark">{post.readTime}</span>
+            <span className="text-sm text-gray-dark">{new Date(post.createdAt).toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}</span>
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-dark mb-4">
-            {post.title}
+            {post.titulo}
           </h2>
-          <p className="text-gray-dark mb-6">{post.excerpt}</p>
+          <p className="text-gray-dark mb-6">{post.resumo}</p>
           <div className="flex items-center justify-between mt-auto">
             <div className="flex items-center">
               <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
                 <span className="text-primary font-bold">
-                  {post.author
+                  {post.autor
                     .split(" ")
                     .map((n) => n[0])
                     .join("")
@@ -203,12 +119,12 @@ function FeaturedPost({ post }) {
                 </span>
               </div>
               <div>
-                <p className="font-medium text-gray-dark">{post.author}</p>
+                <p className="font-medium text-gray-dark">{post.autor}</p>
                 <p className="text-sm text-gray-500">{post.date}</p>
               </div>
             </div>
             <Link
-              to={`/blog/${post.id}`}
+              to={`/blog/${post.titulo}`}
               className="bg-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center"
             >
               Ler artigo
@@ -233,8 +149,47 @@ function FeaturedPost({ post }) {
 }
 
 export default function Blog() {
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { setFlashMessage } = useFlashMessage(); // Inicialize o hook
+
+  useEffect(() => {
+    const fetchArtigos = async () => {
+      try {
+        setError(null); // Limpa erros anteriores
+        const response = await api.get("/artigos"); // Endpoint para buscar artigos
+        setBlogPosts(response.data.artigos || []);
+        debugger
+      } catch (err) {
+        console.error("Erro ao carregar artigos:", err);
+        setError("Não foi possível carregar os artigos.");
+        setFlashMessage("Erro ao carregar artigos.", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArtigos();
+  }, []); // Array vazio para rodar apenas uma vez ao montar o componente
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
   const [categoryFilter, setCategoryFilter] = useState("");
   const featuredPost = blogPosts[0];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   // Filtrar posts por categoria
   const filteredPosts = categoryFilter
@@ -293,32 +248,6 @@ export default function Blog() {
       {/* Blog Posts */}
       <section className="pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Category Filter */}
-          <div className="mb-8 flex flex-wrap gap-2">
-            <button
-              onClick={() => setCategoryFilter("")}
-              className={`px-4 py-2 rounded-full text-sm font-medium ${
-                categoryFilter === ""
-                  ? "bg-primary text-white"
-                  : "bg-white text-gray-dark hover:bg-gray-100"
-              }`}
-            >
-              Todos
-            </button>
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setCategoryFilter(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium ${
-                  categoryFilter === category
-                    ? "bg-primary text-white"
-                    : "bg-white text-gray-dark hover:bg-gray-100"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
 
           {/* Posts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -326,7 +255,6 @@ export default function Blog() {
               <BlogPostCard key={post.id} post={post} />
             ))}
           </div>
-
           {/* Pagination */}
           <div className="mt-12 flex justify-center">
             <nav className="inline-flex rounded-md shadow-sm">

@@ -5,7 +5,6 @@ import {
   Briefcase,
   Users,
   Eye,
-  TrendingUp,
   Calendar,
   MapPin,
   Clock,
@@ -24,22 +23,36 @@ import useFlashMessage from "../../../hooks/useFlashMessage";
 export default function EmpresaDashboard() {
   const [loading, setLoading] = useState(true);
   const { setFlashMessage } = useFlashMessage();
-  const [vagasRecentes, setVagasRecentes] = useState(null);
+  const [vagasRecentes, setVagasRecentes] = useState([]);
   const [candidaturasRecentes, setCandidaturasRecentes] = useState(null);
   const [estatisticas, setEstatisticas] = useState(null);
 
   useEffect(() => {
     const fetchEmpresaData = async () => {
       try {
-        const response = await api.get("/empresas/DashboardEmpresa/");
+        
+        api.get("/empresas/DashboardEmpresa/").then((response) => {
+          
+          const { vagasRecentes, candidaturasRecentes, estatisticas } =
+            response.data;
 
-        const { vagasRecentes, candidaturasRecentes, estatisticas } =
-          response.data;
-        debugger;
-        setVagasRecentes(vagasRecentes);
-        setCandidaturasRecentes(candidaturasRecentes);
-        setEstatisticas(estatisticas);
-        setLoading(false);
+          setVagasRecentes(
+            vagasRecentes.map((vaga) => ({
+              id: vaga.id,
+              titulo: vaga.titulo,
+              tipo: vaga.tipo,
+              localizacao: vaga.localizacao,
+              data: new Date(vaga.data).toLocaleDateString("pt-BR"),
+              empresa: vaga.empresa,
+              status: vaga.status,
+            }))
+          );
+
+          setVagasRecentes(vagasRecentes);
+          setCandidaturasRecentes(candidaturasRecentes);
+          setEstatisticas(estatisticas);
+          setLoading(false);
+        });
       } catch (error) {
         console.error("Erro ao carregar dados da empresa:", error);
         setFlashMessage("Erro ao carregar dados da empresa.", "error");
@@ -201,7 +214,7 @@ export default function EmpresaDashboard() {
             <div className="p-6 flex justify-between items-center border-b border-gray-medium">
               <h2 className="text-xl font-bold text-gray-dark">Suas Vagas</h2>
               <Link
-                href="/empresa/vagas"
+                to="/empresa/vagas"
                 className="text-primary hover:text-primary-dark text-sm font-medium transition-colors"
               >
                 Ver todas
@@ -253,7 +266,7 @@ export default function EmpresaDashboard() {
                       </div>
                     </div>
                     <Link
-                      href={`/empresa/vagas/${vaga.id}`}
+                      to={`/empresa/vagas/${vaga.titulo}`}
                       className="text-primary hover:text-primary-dark text-sm font-medium transition-colors"
                     >
                       Gerenciar

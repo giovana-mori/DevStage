@@ -40,12 +40,19 @@ export default function useAuth() {
   async function login(user) {
     let msgText = "Login com sucesso";
     let msgType = "success";
+    
     try {
       const response = await api.post("users/Login", user);
       console.log(response.data);
-      
       await authUser(response.data);
-      navigate("/");
+      //wait for data and redirect
+
+      if (response.data.user.tipo === "empresa") {
+        await navigate("/empresa")
+      } else if (response.data.user.tipo === "admin")
+        await navigate("/admin")
+      else
+        await navigate("/");
       return response.data;
     } catch (error) {
       msgText = error.response.data.message;

@@ -6,54 +6,6 @@ import { useEffect, useState } from "react";
 import api from "../../../utils/api";
 import useFlashMessage from "../../../hooks/useFlashMessage";
 
-// Dados de exemplo para a tabela de vagas
-const vagasExemplo = [
-  {
-    id: 1,
-    titulo: "Estágio em Desenvolvimento Front-end",
-    tipo: "Estágio",
-    localizacao: "São Paulo, SP (Remoto)",
-    data: "10/05/2023",
-    empresa: "Acme Brasil",
-    status: "Ativa",
-  },
-  {
-    id: 2,
-    titulo: "Estágio em Desenvolvimento Back-end",
-    tipo: "Estágio",
-    localizacao: "Rio de Janeiro, RJ (Presencial)",
-    data: "08/05/2023",
-    empresa: "Tech Solutions",
-    status: "Ativa",
-  },
-  {
-    id: 3,
-    titulo: "Estágio em Desenvolvimento Mobile",
-    tipo: "Estágio",
-    localizacao: "Belo Horizonte, MG (Híbrido)",
-    data: "05/05/2023",
-    empresa: "Digital Innovations",
-    status: "Ativa",
-  },
-  {
-    id: 4,
-    titulo: "Estágio em UX/UI Design",
-    tipo: "Estágio",
-    localizacao: "Curitiba, PR (Remoto)",
-    data: "03/05/2023",
-    empresa: "Creative Labs",
-    status: "Pausada",
-  },
-  {
-    id: 5,
-    titulo: "Estágio em DevOps",
-    tipo: "Estágio",
-    localizacao: "Porto Alegre, RS (Presencial)",
-    data: "01/05/2023",
-    empresa: "Cloud Systems",
-    status: "Encerrada",
-  },
-];
 
 export default function AdminDashboard() {
   const [vagas, setVagas] = useState([]);
@@ -71,7 +23,7 @@ export default function AdminDashboard() {
           const { estatisticas, vagasRecentes } = response.data;
 
           setVagas(
-            vagasRecentes.map((vaga) => ({
+            vagasRecentes?.map((vaga) => ({
               id: vaga.id,
               titulo: vaga.titulo,
               tipo: vaga.tipo,
@@ -120,7 +72,7 @@ export default function AdminDashboard() {
   }
   return (
     <div className="min-h-screen bg-gray-light">
-      <AdminHeader activeTab="dashboard" />
+      <AdminHeader activeTab="Dashboard" />
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -287,7 +239,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-medium">
-                {vagas.map((vaga) => (
+                {vagas?.map((vaga) => (
                   <tr key={vaga.id} className="hover:bg-gray-light">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-dark">
@@ -312,13 +264,12 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          vaga.status === "Ativa"
-                            ? "bg-green-100 text-green-800"
-                            : vaga.status === "Pausada"
+                        className={`px-2 inline-flex text-xs leading-5 font-normal rounded-full ${vaga.status === "Ativa"
+                          ? "bg-green-100 text-green-800"
+                          : vaga.status === "Pausada"
                             ? "bg-yellow-100 text-yellow-800"
                             : "bg-red-100 text-red-800"
-                        }`}
+                          }`}
                       >
                         {vaga.status}
                       </span>
@@ -376,11 +327,10 @@ export default function AdminDashboard() {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`px-3 py-1 border border-gray-medium rounded-md text-sm ${
-                  currentPage === 1
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-dark hover:bg-gray-light cursor-pointer"
-                }`}
+                className={`px-3 py-1 border border-gray-medium rounded-md text-sm ${currentPage === 1
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-gray-dark hover:bg-gray-light cursor-pointer"
+                  }`}
               >
                 Anterior
               </button>
@@ -388,11 +338,10 @@ export default function AdminDashboard() {
                 <button
                   key={i + 1}
                   onClick={() => handlePageChange(i + 1)}
-                  className={`px-3 py-1 border rounded-md text-sm ${
-                    currentPage === i + 1
-                      ? "bg-primary text-white border-primary"
-                      : "text-gray-dark border-gray-medium hover:bg-gray-light"
-                  }`}
+                  className={`px-3 py-1 border rounded-md text-sm ${currentPage === i + 1
+                    ? "bg-primary text-white border-primary"
+                    : "text-gray-dark border-gray-medium hover:bg-gray-light"
+                    }`}
                 >
                   {i + 1}
                 </button>
@@ -400,11 +349,10 @@ export default function AdminDashboard() {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`px-3 py-1 border border-gray-medium rounded-md text-sm ${
-                  currentPage === totalPages
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-dark hover:bg-gray-light cursor-pointer"
-                }`}
+                className={`px-3 py-1 border border-gray-medium rounded-md text-sm ${currentPage === totalPages
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-gray-dark hover:bg-gray-light cursor-pointer"
+                  }`}
               >
                 Próxima
               </button>

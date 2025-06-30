@@ -54,7 +54,7 @@ export default function AdminBlog() {
 
   const handleDelete = (e) => {
     if (window.confirm("Tem certeza que deseja deletar?")) {
-      debugger;
+      
       const empresaId = e.currentTarget.dataset["id"];
       api
         .delete(`/artigos/${empresaId}`)
@@ -74,7 +74,7 @@ export default function AdminBlog() {
 
   return (
     <div className="min-h-screen bg-gray-light">
-      <AdminHeader activeTab="blog" />
+      <AdminHeader activeTab="Blog" />
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -232,7 +232,7 @@ export default function AdminBlog() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          className={`px-2 inline-flex text-xs leading-5 font-normal rounded-full ${
                             post.status.toLowerCase() === "publicado"
                               ? "bg-green-100 text-green-800"
                               : post.status === "Rascunho"

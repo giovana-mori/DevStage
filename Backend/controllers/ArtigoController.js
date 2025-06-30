@@ -12,13 +12,6 @@ export default class ArtigoController {
   static async createArtigo(req, res) {
     try {
       const imagem_capa = req.files?.imagem_capa;
-      const authHeader = req.headers["authorization"];
-      const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
-      const user = await getUserByToken(token);
-
-      if (!user) {
-        return res.status(404).json({ message: "Usuario não permitido" });
-      }
       if (imagem_capa) {
         // 2. Verificar se e uma, nao importa o tipo
         if (imagem_capa.mimetype.split("/")[0] !== "image") {
@@ -109,19 +102,28 @@ export default class ArtigoController {
     res.status(200).json({ artigo });
   }
 
+  static async getArtigoBySlug(req, res) {
+    const { slug } = req.params;
+    console.log(slug);
+    if (!slug) {
+      return res
+        .status(422)
+        .json({ message: "Slug do artigo obrigatório na busca" });
+    }
+    const artigo = await Artigo.findOne({ slug });
+    if (!artigo || artigo.length === 0) {
+      return res.status(404).json({ message: "Artigo não encontrado" });
+    }
+    res.status(200).json({ artigo });
+  }
+
   static async updateArtigo(req, res) {
     try {
       const { id } = req.params;
       const imagem_capa = req?.files?.imagem_capa;
-      const authHeader = req.headers["authorization"];
-      const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
-      const user = await getUserByToken(token);
       const artigo = await Artigo.findById(id);
       if (!artigo) {
         return res.status(404).json({ message: "Artigo não encontrado" });
-      }
-      if (!user) {
-        return res.status(404).json({ message: "Usuario não permitido" });
       }
       if (imagem_capa) {
         // 2. Verificar se e uma, nao importa o tipo

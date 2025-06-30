@@ -9,6 +9,7 @@ import User from "../models/User.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 export default class EmpresaController {
   static async createEmpresa(req, res) {
     const logo = req.file?.path;
@@ -35,6 +36,7 @@ export default class EmpresaController {
       return res.status(500).json({ message: "Erro ao criar empresa" });
     }
   }
+
   static async getEmpresas(req, res) {
     try {
       const { search, sortBy = "-createdAt" } = req.query;
@@ -144,6 +146,74 @@ export default class EmpresaController {
       return res
         .status(500)
         .json({ message: "Erro ao atualizar empresa", error: error });
+    }
+  }
+
+  static async uploadLogo(req, res) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+    const user = await getUserByToken(token);
+
+    if (!user)
+      return res.status(404).json({ message: "Usuário não encontrado" });
+
+    try {
+      const empresa = await Empresa.findOne({ user: user._id });
+      if (!empresa)
+        return res.status(404).json({ message: "Empresa não encontrada" });
+      // 1. Verificar se o arquivo foi enviado
+      if (!req.files || !req.files.logo) {
+        return res.status(400).json({ message: "Nenhum arquivo enviado." });
+      }
+
+      const logo = req.files.logo;
+
+      // 2. Verificar se é uma imagem
+      if (logo.mimetype !== "image/jpeg" && logo.mimetype !== "image/png") {
+        return res
+          .status(400)
+          .json({ message: "Apenas arquivos de imagem são permitidos." });
+      }
+
+      // 3. Configurar caminhos
+      const uploadDir = path.join(__dirname, "../public/logos");
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      // 4. Gerar nome único
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      const fileName = `logo-${uniqueSuffix}${path.extname(logo.name)}`;
+      const uploadPath = path.join(uploadDir, fileName);
+
+      // 5. Mover arquivo
+      await logo.mv(uploadPath);
+
+      // 6. Construir URL
+      const fileUrl = `/logos/${fileName}`;
+
+      // 8. Remover arquivo anterior se existir
+      if (empresa.logo) {
+        const oldFilePath = path.join(uploadDir, path.basename(empresa.logo));
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      }
+
+      // 9. Atualizar usuário
+      empresa.logo = fileUrl;
+
+      await empresa.save();
+
+      // 10. Responder
+      return res.status(200).json({
+        message: "logo enviada com sucesso!",
+        logo: empresa.logo,
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Erro ao enviar logo", error: error.message });
     }
   }
 

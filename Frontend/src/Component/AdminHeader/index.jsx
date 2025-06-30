@@ -12,16 +12,16 @@ export default function AdminHeader({ activeTab }) {
   const ItemsMenu =
     user.tipo === "admin"
       ? [
-          { name: "Dashboard", link: "/admin" },
-          { name: "Vagas", link: "/admin/vagas" },
-          { name: "Empresas", link: "/admin/empresas" },
-          { name: "Blog", link: "/admin/blog" },
-        ]
+        { name: "Dashboard", link: "/admin" },
+        { name: "Vagas", link: "/admin/vagas" },
+        { name: "Empresas", link: "/admin/empresas" },
+        { name: "Blog", link: "/admin/blog" },
+      ]
       : [
-          { name: "Dashboard", link: "/empresa" },
-          { name: "Vagas", link: "/empresa/vagas" },
-          { name: "Candidaturas", link: "/empresa/candidaturas" },
-        ];
+        { name: "Dashboard", link: "/empresa" },
+        { name: "Vagas", link: "/empresa/vagas" },
+        { name: "Candidaturas", link: "/empresa/candidaturas" },
+      ];
 
   return (
     <header className="bg-white shadow-soft sticky top-0 z-50">
@@ -29,7 +29,7 @@ export default function AdminHeader({ activeTab }) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/admin" className="flex items-center">
+            <Link to={user.tipo === "admin" ? "/admin" : "/empresa"} className="flex items-center">
               <div className="flex items-center">
                 <img
                   className="h-10 flex"
@@ -46,11 +46,10 @@ export default function AdminHeader({ activeTab }) {
               <Link
                 key={index}
                 to={item.link}
-                className={`text-gray-dark hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === item.name
-                    ? "border-b-2 border-primary text-primary"
-                    : ""
-                }`}
+                className={`text-gray-dark hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === item.name
+                  ? "border-b-2 border-primary text-primary"
+                  : ""
+                  }`}
               >
                 {item.name}
               </Link>
@@ -78,14 +77,22 @@ export default function AdminHeader({ activeTab }) {
                   />
                 </svg>
               </button>
-
               {/* Dropdown menu */}
               {isMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1">
+
+                  {(user.tipo === "empresa") &&
+                    <Link
+                      to="/empresa/perfil"
+                      className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light"
+                    >
+                      Perfil
+                    </Link>
+                  }
                   <div className="border-t border-gray-medium my-1"></div>
                   <button
                     onClick={logout}
-                    className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light"
+                    className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light w-full text-left"
                   >
                     Sair
                   </button>
@@ -145,11 +152,10 @@ export default function AdminHeader({ activeTab }) {
             <Link
               key={index}
               to={item.link}
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                activeTab === item.name
-                  ? "text-primary border-l-4 border-primary"
-                  : "text-gray-dark hover:text-primary"
-              }`}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${activeTab === item.name
+                ? "text-primary border-l-4 border-primary"
+                : "text-gray-dark hover:text-primary"
+                }`}
             >
               {item.name}
             </Link>
