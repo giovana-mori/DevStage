@@ -9,7 +9,6 @@ const empresaSchema = new Schema({
   cnpj: {
     type: String,
     required: true,
-    unique: true,
   },
   localizacao: {
     type: String,
@@ -28,7 +27,6 @@ const empresaSchema = new Schema({
   },
   setor: {
     type: String,
-    required: true,
   },
   site: {
     type: String,
@@ -42,6 +40,10 @@ const empresaSchema = new Schema({
   status: {
     type: String,
     required: true,
+  },
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User", // Referência ao modelo User
   },
   vagas: [
     {

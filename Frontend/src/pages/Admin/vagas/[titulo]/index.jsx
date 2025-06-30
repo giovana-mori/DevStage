@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AdminHeader from "../../../../Component/AdminHeader/index.jsx";
 import api from "../../../../utils/api.jsx";
 import useFlashMessage from "../../../../hooks/useFlashMessage.jsx";
 import EmpresaAsyncSelect from "../../components/EmpresaAsyncSelect.jsx";
+import { Context } from "../../../../context/UserContext.jsx";
 
 export default function AdminVagasForm() {
   const { titulo } = useParams();
@@ -61,6 +62,8 @@ export default function AdminVagasForm() {
       : "",
   });
 
+  // Acessar o contexto do usuário
+  const { user } = useContext(Context); // Adicione esta linha
   // Simulação de dados da vaga
   useEffect(() => {
     const carregarVaga = async () => {
@@ -132,7 +135,11 @@ export default function AdminVagasForm() {
       msgType = "error";
     } finally {
       setFlashMessage(msgText, msgType);
-      navigate("/admin/vagas");
+      navigate(
+        user && user.tipo === "empresa"
+          ? `/empresa/vagas/`
+          : `/admin/vagas/`
+      );
     }
   };
 
@@ -213,32 +220,24 @@ export default function AdminVagasForm() {
               </div>
 
               {/* Nome da empresa */}
-              <div>
-                <label
-                  htmlFor="empresa"
-                  className="block text-sm font-medium text-gray-dark mb-1"
-                >
-                  Nome da empresa <span className="text-red-500">*</span>
-                </label>
-                {/* <input
-                  type="text"
-                  id="empresa"
-                  name="empresa"
-                  value={formData.empresa}
-                  onChange={handleChange}
-                  required
-                  className="block w-full px-3 py-2 border border-gray-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                  placeholder="Ex: TechCorp Solutions"
-                /> */}
-                <EmpresaAsyncSelect
-                  value={formData.empresa}
-                  defaultValue={formData.empresa}
-                  onChange={(value) =>
-                    setFormData((prev) => ({ ...prev, empresa: value }))
-                  }
-                  required
-                />
-              </div>
+              {user.tipo !== "empresa" && (
+                <div>
+                  <label
+                    htmlFor="empresa"
+                    className="block text-sm font-medium text-gray-dark mb-1"
+                  >
+                    Nome da empresa <span className="text-red-500">*</span>
+                  </label>
+                  <EmpresaAsyncSelect
+                    value={formData.empresa}
+                    defaultValue={formData.empresa}
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, empresa: value }))
+                    }
+                    required
+                  />
+                </div>
+              )}
 
               {/* Localização */}
               <div>

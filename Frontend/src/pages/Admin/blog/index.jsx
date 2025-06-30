@@ -52,10 +52,25 @@ export default function AdminBlog() {
     setCurrentPage(pageNumber);
   };
 
+  const handleDelete = (e) => {
+    if (window.confirm("Tem certeza que deseja deletar?")) {
+      debugger;
+      const empresaId = e.currentTarget.dataset["id"];
+      api
+        .delete(`/artigos/${empresaId}`)
+        .then((response) => {
+          if (response.status === 200) {
+            setArtigos(artigos.filter((artigo) => artigo.id !== empresaId));
+          }
+        })
+        .catch((error) => {
+          console.error("Erro ao excluir empresa:", error);
+        });
+    }
+  };
+
   // Obter categorias únicas para o filtro
-  const categorias = [
-    ...new Set(artigos.map((post) => post.categoria)),
-  ];
+  const categorias = [...new Set(artigos.map((post) => post.categoria))];
 
   return (
     <div className="min-h-screen bg-gray-light">
@@ -231,7 +246,7 @@ export default function AdminBlog() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <Link
-                            to={`/admin/blog/${post.id}`}
+                            to={`/admin/blog/${post.titulo}`}
                             className="text-primary hover:text-primary-dark"
                           >
                             <svg
@@ -243,26 +258,11 @@ export default function AdminBlog() {
                               <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                             </svg>
                           </Link>
-                          <Link
-                            to={`/blog/${post.id}`}
-                            target="_blank"
-                            className="text-blue-500 hover:text-blue-700"
+                          <button
+                            data-id={post.id}
+                            onClick={handleDelete}
+                            className="text-red-500 hover:text-red-700"
                           >
-                            <svg
-                              className="w-5 h-5"
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                              <path
-                                fillRule="evenodd"
-                                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </Link>
-                          <button className="text-red-500 hover:text-red-700">
                             <svg
                               className="w-5 h-5"
                               xmlns="http://www.w3.org/2000/svg"
@@ -295,7 +295,7 @@ export default function AdminBlog() {
           </div>
 
           {/* Paginação */}
-          <div className="px-6 py-4 flex justify-between items-center border-t border-gray-medium">
+          <div className="px-6 py-4 flex flex-col lg:flex-row justify-between items-center border-t border-gray-medium">
             <div className="text-sm text-gray-dark">
               Mostrando{" "}
               <span className="font-medium">{indexOfFirstItem + 1}</span> a{" "}

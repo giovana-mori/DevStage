@@ -12,7 +12,7 @@ function Home() {
 
   useEffect(() => {
     api.get("/vagas").then((response) => {
-      debugger;
+      
       const vagas = response.data.vagas.map((vaga) => {
         return {
           id: vaga._id,
@@ -189,39 +189,68 @@ function Home() {
       {/* Recent Jobs Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-primary">Vagas Recentes</h2>
-            <p className="mt-4 text-lg text-gray-dark">
-              Confira as últimas oportunidades adicionadas à nossa plataforma
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {vagasRecentes.map((vaga) => (
-              <VagaCard key={vaga.id} vaga={vaga} />
-            ))}
-          </div>
-
-          <div className="mt-10 text-center">
-            <Link
-              to="/vagas"
-              className="inline-flex items-center text-primary hover:text-primary-dark font-medium"
-            >
-              Ver todas as vagas
+          {vagas.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-soft p-8 text-center">
               <svg
-                className="ml-2 h-5 w-5"
+                className="w-16 h-16 text-gray-300 mx-auto mb-4"
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
                 <path
-                  fillRule="evenodd"
-                  d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                  clipRule="evenodd"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-            </Link>
-          </div>
+              <h3 className="text-lg font-semibold text-gray-dark mb-2">
+                Nenhuma vaga encontrada
+              </h3>
+              <p className="text-gray-dark mb-4">
+                Não encontramos vagas no momento, Volte mais tarde
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-primary">
+                  Vagas Recentes
+                </h2>
+                <p className="mt-4 text-lg text-gray-dark">
+                  Confira as últimas oportunidades adicionadas à nossa
+                  plataforma
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {vagasRecentes.map((vaga) => (
+                  <VagaCard key={vaga.id} vaga={vaga} />
+                ))}
+              </div>
+
+              <div className="mt-10 text-center">
+                <Link
+                  to="/vagas"
+                  className="inline-flex items-center text-primary hover:text-primary-dark font-medium"
+                >
+                  Ver todas as vagas
+                  <svg
+                    className="ml-2 h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </section>
 

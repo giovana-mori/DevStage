@@ -21,8 +21,7 @@ import {
   User,
 } from "lucide-react";
 
-export default function AdminUsuarioForm() {
-  debugger;
+export default function AdminUsuarioForm() {  
   const { id } = useParams();
   const isEditing = (id && id !== "novo");
   const { setFlashMessage } = useFlashMessage();

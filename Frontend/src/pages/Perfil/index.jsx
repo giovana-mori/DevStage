@@ -115,7 +115,6 @@ export default function Perfil() {
       if (authenticated) {
         try {
           api.get("/users/Perfil").then((response) => {
-            debugger;
             const { user } = response.data;
             setFormUser(user);
             setLoading(false);
@@ -142,19 +141,27 @@ export default function Perfil() {
     );
   }
 
-  const handleSalvar = async () => {
+  const handleSalvar = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    debugger;
     // Simulação de envio para API
     try {
       setIsLoading(true);
-      api.post("/users/Update/", formUser);
-      let msgText = "Cadastro atualizado com sucesso";
-      let msgType = "success";
-      setFlashMessage(msgText, msgType);
+      const response = await api.post("/users/Update/", formUser, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setFlashMessage(
+        response.data.message || "Perfil atualizado com sucesso!",
+        "success"
+      );
     } catch (error) {
-      console.error("Erro ao salvar Usuario:", error);
-      let msgText = "Erro ao atualizar o cadastro";
-      let msgType = "error";
-      setFlashMessage(msgText, msgType);
+      console.error("Erro ao atualizar perfil:", error);
+      const msg = error.response?.data?.message || "Erro ao atualizar perfil.";
+      setFlashMessage(msg, "error");
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
@@ -162,11 +169,11 @@ export default function Perfil() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "aprovado":
+      case "aprovada":
         return "bg-green-100 text-green-800";
-      case "rejeitado":
+      case "rejeitada":
         return "bg-red-100 text-red-800";
-      case "em_analise":
+      case "visualizada":
         return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -175,11 +182,11 @@ export default function Perfil() {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case "aprovado":
+      case "aprovada":
         return <CheckCircle className="w-4 h-4" />;
-      case "rejeitado":
+      case "rejeitada":
         return <XCircle className="w-4 h-4" />;
-      case "em_analise":
+      case "visualizada":
         return <Clock className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
@@ -188,12 +195,12 @@ export default function Perfil() {
 
   const getStatusText = (status) => {
     switch (status) {
-      case "aprovado":
-        return "Aprovado";
-      case "rejeitado":
-        return "Rejeitado";
-      case "em_analise":
-        return "Em análise";
+      case "aprovada":
+        return "Aprovada";
+      case "rejeitada":
+        return "Rejeitada";
+      case "visualizada":
+        return "Visualizada";
       default:
         return "Pendente";
     }
@@ -267,6 +274,17 @@ export default function Perfil() {
     return parseFloat(bytes / Math.pow(k, i)).toFixed(1) + " " + sizes[i];
   };
 
+  const handleFileChange = (e) => {
+    debugger;
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFormUser((prev) => ({
+        ...prev,
+        foto: file,
+      }));
+    }
+  };
+
   // Função para remover o currículo
   const handleRemoverCurriculo = async () => {
     try {
@@ -297,81 +315,6 @@ export default function Perfil() {
       <Header />
 
       <div className="container mx-auto px-4 py-8">
-        {/* Header do Perfil */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="flex items-start gap-6">
-            <div className="relative">
-              <img
-                src={formUser?.foto || "/placeholder.svg"}
-                alt={formUser?.nome}
-                className="w-24 h-24 rounded-full object-cover"
-              />
-              <button className="absolute -bottom-2 -right-2 bg-purple-600 text-white p-2 rounded-full hover:bg-purple-700 transition-colors">
-                <Upload className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-800 mb-1">
-                    {formUser?.nome}
-                  </h1>
-                  <p className="text-gray-600 mb-2">{formUser?.email}</p>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {formUser?.localizacao || "N/D"}
-                    </div>
-                    {formUser?.tipo === "estudante" && (
-                      <div className="flex items-center gap-1">
-                        <GraduationCap className="w-4 h-4" />
-                        {formUser?.curso}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="relative size-40">
-                  <svg
-                    className="size-full -rotate-90"
-                    viewBox="0 0 36 36"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                      cx="18"
-                      cy="18"
-                      r="16"
-                      fill="none"
-                      className="stroke-current text-gray-200 "
-                      strokeWidth="2"
-                    ></circle>
-                    <circle
-                      cx="18"
-                      cy="18"
-                      r="16"
-                      fill="none"
-                      className="stroke-current text-primary"
-                      strokeWidth="2"
-                      strokeDasharray="100"
-                      strokeDashoffset="65"
-                      strokeLinecap="round"
-                    ></circle>
-                  </svg>
-
-                  <div className="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2">
-                    <span className="text-center text-2xl font-bold text-blue-600">
-                      {"35%"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-gray-600 leading-relaxed">{formUser?.sobre}</p>
-            </div>
-          </div>
-        </div>
-
         {/* Navegação por Abas */}
         <div className="bg-white rounded-xl shadow-sm mb-8">
           <div className="border-b border-gray-200">
@@ -400,8 +343,44 @@ export default function Perfil() {
           <div className="p-6">
             {/* Aba Perfil */}
             {abaSelecionada === "perfil" && (
-              <div className="space-y-8">
+              <form
+                encType="multipart/form-data"
+                className="space-y-8"
+                onSubmit={handleSalvar}
+              >
                 {/* Informações Pessoais */}
+
+                <div className="flex flex-col items-start">
+                  <div className="table">
+                    <img
+                      src={
+                        formUser?.foto
+                          ? typeof formUser?.foto === "string"
+                            ? process.env.REACT_APP_API + formUser?.foto
+                            : URL.createObjectURL(formUser?.foto)
+                          : "https://placehold.co/100x100/EEE/31343C"
+                      }
+                      alt={formUser?.nome}
+                      className="w-24 h-24 rounded-full object-cover mb-4 mx-auto"
+                    />
+
+                    <label
+                      htmlFor="foto-upload"
+                      className="px-4 py-2 border border-gray-medium rounded-lg text-gray-dark hover:bg-gray-light transition-colors cursor-pointer"
+                    >
+                      <Upload className="w-5 h-5 inline-block mr-2" /> Alterar
+                      Foto
+                      <input
+                        type="file"
+                        id="foto-upload"
+                        name="foto"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-4">
                     Informações Pessoais
@@ -473,12 +452,13 @@ export default function Perfil() {
                       isMulti
                       options={opcoesHabilidades}
                       value={opcoesHabilidades.filter((opt) =>
-                        formUser?.habilidades?.includes(opt.value)
+                        (formUser?.habilidades || []).includes(opt.value)
                       )}
                       onChange={(selectedOptions) => {
                         const habilidadesSelecionadas = selectedOptions.map(
                           (opt) => opt.value
                         );
+                        debugger;
                         setFormUser((prev) => ({
                           ...prev,
                           habilidades: habilidadesSelecionadas,
@@ -523,7 +503,7 @@ export default function Perfil() {
 
                 <div className="flex gap-4 pt-6 border-t border-gray-200">
                   <button
-                    onClick={handleSalvar}
+                    type="submit"
                     disabled={isLoading}
                     className="bg-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2"
                   >
@@ -531,7 +511,7 @@ export default function Perfil() {
                     Salvar alterações
                   </button>
                 </div>
-              </div>
+              </form>
             )}
 
             {/* Aba Candidaturas */}
@@ -612,14 +592,18 @@ export default function Perfil() {
                   Gerenciar Currículo
                 </h2>
 
-                <form method="post" encType="multipart/form-data">
+                <form
+                  method="post"
+                  encType="multipart/form-data"
+                  className="h-0"
+                >
                   <input
                     type="file"
                     id="curriculo-upload"
                     name="curriculo-upload"
                     accept="application/pdf"
                     onChange={handleUploadCurriculo}
-                    className=""
+                    className="invisible h-0"
                   />
                 </form>
 
@@ -643,19 +627,12 @@ export default function Perfil() {
                       </div>
                       <div className="flex gap-2">
                         <a
-                          href={formUser?.curriculo.url}
+                          href={`${process.env.REACT_APP_API}${formUser?.curriculo.url}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                         >
                           <Eye className="w-5 h-5" />
-                        </a>
-                        <a
-                          href={formUser?.curriculo.url}
-                          download
-                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                          <Download className="w-5 h-5" />
                         </a>
                         <button
                           className="p-2 text-red-400 hover:text-red-600 transition-colors"
@@ -687,16 +664,26 @@ export default function Perfil() {
                   </div>
                 ) : (
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
                       Nenhum currículo enviado
                     </h3>
-                    <p className="text-gray-600 mb-6">
-                      Faça upload do seu currículo para se candidatar às vagas
-                    </p>
-                    <button className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-                      Enviar currículo
-                    </button>
+                    <label
+                      htmlFor="curriculo-upload"
+                      className={`w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center ${
+                        isUploading
+                          ? "opacity-50 cursor-not-allowed"
+                          : "hover:border-purple-400 hover:bg-purple-50 cursor-pointer"
+                      } transition-colors block`}
+                      disabled={isUploading}
+                    >
+                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-600 font-medium">
+                        {isUploading ? "Enviando..." : "Atualizar currículo"}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Arraste um arquivo ou clique para selecionar (PDF)
+                      </p>
+                    </label>
                   </div>
                 )}
               </div>

@@ -3,11 +3,13 @@ import EmpresaController from "../../controllers/EmpresaController.js";
 
 const routesEmpresa = Router();
 
-routesEmpresa.post('/CadastrarEmpresa', EmpresaController.createEmpresa);
-routesEmpresa.post('/EditarEmpresa/:id', EmpresaController.updateEmpresa);
 routesEmpresa.get('/', EmpresaController.getEmpresas);
-routesEmpresa.get('/:nome', EmpresaController.getEmpresaByNome);
+routesEmpresa.post('/CadastrarEmpresa', EmpresaController.createEmpresa);
+routesEmpresa.get('/DashboardEmpresa', EmpresaController.getDashboardEmpresa);
+routesEmpresa.get('/DashboardAdmin', EmpresaController.getDashboardAdmin);
+routesEmpresa.get('/EmpresaPerfil/', EmpresaController.getPerfilEmpresa);
 routesEmpresa.post('/EditarEmpresa/:id', EmpresaController.updateEmpresa);
-routesEmpresa.delete('/ExcluirEmpresa/:id', EmpresaController.deleteEmpresa);
+routesEmpresa.get('/:nome', EmpresaController.getEmpresaByNome);
+routesEmpresa.delete('/:id', EmpresaController.deleteEmpresa);
 
 export default routesEmpresa;

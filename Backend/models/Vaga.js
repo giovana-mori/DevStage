@@ -1,5 +1,4 @@
 import mongoose from "../db/conn.js";
-import Empresa from "./Empresa.js"; // Importe o modelo Empresa
 
 const { Schema } = mongoose;
 
@@ -32,10 +31,10 @@ const vagaSchema = new Schema(
       type: String,
       required: true,
     },
-    /*responsabilidades: {
+    responsabilidades: {
       type: [String],
       required: true,
-    },*/
+    },
     requisitos: {
       type: [String],
       required: true,

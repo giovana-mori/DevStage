@@ -7,7 +7,6 @@ const userSchema = new Schema(
     // Informações básicas
     nome: {
       type: String,
-      required: true,
     },
     email: {
       type: String,
@@ -39,7 +38,6 @@ const userSchema = new Schema(
     resumo: {
       type: String,
     },
-
     // Tipo e status
     tipo: {
       type: String,
@@ -138,6 +136,7 @@ const userSchema = new Schema(
       nome: String,
       tamanho: String,
       dataUpload: Date,
+      url: String,
     },
 
     // Timestamps

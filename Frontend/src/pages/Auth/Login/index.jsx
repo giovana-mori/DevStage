@@ -1,7 +1,6 @@
-import styles from "../../../Component/Form/Form.module.css";
 import { useState, useContext } from "react";
 import { Context } from "../../../context/UserContext.jsx";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 function Login() {

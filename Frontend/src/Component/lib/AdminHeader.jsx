@@ -1,9 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import { Context } from "../../context/UserContext";
 export default function AdminHeader({ activeTab }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { authenticated, logout } = useContext(Context);
 
   return (
     <header className="bg-white shadow-soft sticky top-0 z-50">
@@ -13,14 +15,11 @@ export default function AdminHeader({ activeTab }) {
           <div className="flex-shrink-0 flex items-center">
             <Link to="/admin/dashboard" className="flex items-center">
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mr-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M13 3L4 14H15L11 21L20 10H9L13 3Z" fill="#FFA45B" />
-                  </svg>
-                </div>
-                <span className="text-primary text-2xl font-bold">
-                  Dev<span className="text-secondary">Stage</span> <span className="text-sm text-gray-dark">Admin</span>
-                </span>
+                <img
+                  className="h-10 flex"
+                  alt="Logo DevStage"
+                  src="/images/logo_devstage.png"
+                />
               </div>
             </Link>
           </div>
@@ -30,7 +29,9 @@ export default function AdminHeader({ activeTab }) {
             <Link
               to="/admin/dashboard"
               className={`text-gray-dark hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === "dashboard" ? "border-b-2 border-primary text-primary" : ""
+                activeTab === "dashboard"
+                  ? "border-b-2 border-primary text-primary"
+                  : ""
               }`}
             >
               Dashboard
@@ -38,7 +39,9 @@ export default function AdminHeader({ activeTab }) {
             <Link
               to="/admin/vagas"
               className={`text-gray-dark hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === "vagas" ? "border-b-2 border-primary text-primary" : ""
+                activeTab === "vagas"
+                  ? "border-b-2 border-primary text-primary"
+                  : ""
               }`}
             >
               Vagas
@@ -46,7 +49,9 @@ export default function AdminHeader({ activeTab }) {
             <Link
               to="/admin/empresas"
               className={`text-gray-dark hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === "empresas" ? "border-b-2 border-primary text-primary" : ""
+                activeTab === "empresas"
+                  ? "border-b-2 border-primary text-primary"
+                  : ""
               }`}
             >
               Empresas
@@ -54,7 +59,9 @@ export default function AdminHeader({ activeTab }) {
             <Link
               to="/admin/usuarios"
               className={`text-gray-dark hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === "usuarios" ? "border-b-2 border-primary text-primary" : ""
+                activeTab === "usuarios"
+                  ? "border-b-2 border-primary text-primary"
+                  : ""
               }`}
             >
               Usuários
@@ -62,7 +69,9 @@ export default function AdminHeader({ activeTab }) {
             <Link
               to="/admin/blog"
               className={`text-gray-dark hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeTab === "blog" ? "border-b-2 border-primary text-primary" : ""
+                activeTab === "blog"
+                  ? "border-b-2 border-primary text-primary"
+                  : ""
               }`}
             >
               Blog
@@ -77,7 +86,12 @@ export default function AdminHeader({ activeTab }) {
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 <span className="mr-2">Admin</span>
-                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <svg
+                  className="h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
                   <path
                     fillRule="evenodd"
                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -89,7 +103,10 @@ export default function AdminHeader({ activeTab }) {
               {/* Dropdown menu */}
               {isMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1">
-                  <Link to="/admin/perfil" className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light">
+                  <Link
+                    to="/admin/perfil"
+                    className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light"
+                  >
                     Perfil
                   </Link>
                   <Link
@@ -99,9 +116,12 @@ export default function AdminHeader({ activeTab }) {
                     Configurações
                   </Link>
                   <div className="border-t border-gray-medium my-1"></div>
-                  <Link to="/" className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light">
+                  <button
+                    onClick={logout}
+                    className="block px-4 py-2 text-sm text-gray-dark hover:bg-gray-light"
+                  >
                     Sair
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>
@@ -123,7 +143,12 @@ export default function AdminHeader({ activeTab }) {
                 stroke="currentColor"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
               {/* Icon when menu is open */}
               <svg
@@ -134,7 +159,12 @@ export default function AdminHeader({ activeTab }) {
                 stroke="currentColor"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -147,7 +177,9 @@ export default function AdminHeader({ activeTab }) {
           <Link
             to="/admin/dashboard"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              activeTab === "dashboard" ? "text-primary border-l-4 border-primary" : "text-gray-dark hover:text-primary"
+              activeTab === "dashboard"
+                ? "text-primary border-l-4 border-primary"
+                : "text-gray-dark hover:text-primary"
             }`}
           >
             Dashboard
@@ -155,7 +187,9 @@ export default function AdminHeader({ activeTab }) {
           <Link
             to="/admin/vagas"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              activeTab === "vagas" ? "text-primary border-l-4 border-primary" : "text-gray-dark hover:text-primary"
+              activeTab === "vagas"
+                ? "text-primary border-l-4 border-primary"
+                : "text-gray-dark hover:text-primary"
             }`}
           >
             Vagas
@@ -163,7 +197,9 @@ export default function AdminHeader({ activeTab }) {
           <Link
             to="/admin/empresas"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              activeTab === "empresas" ? "text-primary border-l-4 border-primary" : "text-gray-dark hover:text-primary"
+              activeTab === "empresas"
+                ? "text-primary border-l-4 border-primary"
+                : "text-gray-dark hover:text-primary"
             }`}
           >
             Empresas
@@ -171,7 +207,9 @@ export default function AdminHeader({ activeTab }) {
           <Link
             to="/admin/usuarios"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              activeTab === "usuarios" ? "text-primary border-l-4 border-primary" : "text-gray-dark hover:text-primary"
+              activeTab === "usuarios"
+                ? "text-primary border-l-4 border-primary"
+                : "text-gray-dark hover:text-primary"
             }`}
           >
             Usuários
@@ -179,7 +217,9 @@ export default function AdminHeader({ activeTab }) {
           <Link
             to="/admin/blog"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              activeTab === "blog" ? "text-primary border-l-4 border-primary" : "text-gray-dark hover:text-primary"
+              activeTab === "blog"
+                ? "text-primary border-l-4 border-primary"
+                : "text-gray-dark hover:text-primary"
             }`}
           >
             Blog
@@ -197,11 +237,14 @@ export default function AdminHeader({ activeTab }) {
           >
             Configurações
           </Link>
-          <Link to="/" className="text-gray-dark hover:text-primary block px-3 py-2 rounded-md text-base font-medium">
+          <button
+            onClick={logout}
+            className="text-gray-dark hover:text-primary block px-3 py-2 rounded-md text-base font-medium"
+          >
             Sair
-          </Link>
+          </button>
         </div>
       </div>
     </header>
-  )
+  );
 }

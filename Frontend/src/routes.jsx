@@ -19,10 +19,14 @@ import AdminEmpresaForm from "./pages/Admin/empresas/[titulo]/index.jsx";
 import AdminUsuarios from "./pages/Admin/usuarios/index.jsx";
 import AdminUsuarioForm from "./pages/Admin/usuarios/[id]/index.jsx";
 import AdminBlog from "./pages/Admin/blog/index.jsx";
-import AdminBlogPostForm from "./pages/Admin/blog/[id]/index.jsx";
+import AdminBlogPostForm from "./pages/Admin/blog/[titulo]/index.jsx";
 import Perfil from "./pages/Perfil/index.jsx";
 import DetalhesVaga from "./pages/Vagas/[titulo]/index.jsx";
 import ProtectedAdminRoute from "./utils/ProtectedAdminRoute";
+import ProtectedEmpresaRoute from "./utils/ProtectedEmpresaRoute.jsx";
+import EmpresaDashboard from "./pages/Empresa/dashboard/page.jsx";
+import PerfilEmpresa from "./pages/Empresa/perfil/page.jsx";
+import CandidaturasEmpresa from "./pages/Empresa/candidaturas/page.jsx";
 
 function AppRoutes() {
   return (
@@ -53,7 +57,7 @@ function AppRoutes() {
               path="/admin/vagas"
               element={
                 <ProtectedAdminRoute>
-                  <AdminVagas />{" "}
+                  <AdminVagas />
                 </ProtectedAdminRoute>
               }
             />
@@ -122,11 +126,52 @@ function AppRoutes() {
               }
             />
             <Route
-              path="/admin/blog/:id"
+              path="/admin/blog/:titulo"
               element={
                 <ProtectedAdminRoute>
                   <AdminBlogPostForm />
                 </ProtectedAdminRoute>
+              }
+            />
+            {/* rotas para empresa protegida */}
+            <Route
+              path="/empresa/"
+              element={
+                <ProtectedEmpresaRoute>
+                  <EmpresaDashboard />
+                </ProtectedEmpresaRoute>
+              }
+            />
+            <Route
+              path="/empresa/vagas"
+              element={
+                <ProtectedEmpresaRoute>
+                  <AdminVagas />
+                </ProtectedEmpresaRoute>
+              }
+            />
+            <Route
+              path="/empresa/vagas/:titulo"
+              element={
+                <ProtectedEmpresaRoute>
+                  <AdminVagasForm />
+                </ProtectedEmpresaRoute>
+              }
+            />
+            <Route
+              path="/empresa/perfil/"
+              element={
+                <ProtectedEmpresaRoute>
+                  <PerfilEmpresa />
+                </ProtectedEmpresaRoute>
+              }
+            />
+            <Route
+              path="/empresa/candidaturas/"
+              element={
+                <ProtectedEmpresaRoute>
+                  <CandidaturasEmpresa />
+                </ProtectedEmpresaRoute>
               }
             />
           </Routes>

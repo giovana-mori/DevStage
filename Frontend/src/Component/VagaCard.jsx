@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 export function VagaCard({ vaga }) {
-  debugger;
+  
   return (
     <div className="bg-white rounded-xl shadow-soft hover:shadow-medium transition-shadow p-6 border border-gray-200 flex flex-col justify-between">
       <div>

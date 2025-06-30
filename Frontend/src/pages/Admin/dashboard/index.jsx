@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import AdminHeader from "../../../Component/AdminHeader";
 import { useEffect, useState } from "react";
 import api from "../../../utils/api";
+import useFlashMessage from "../../../hooks/useFlashMessage";
 
 // Dados de exemplo para a tabela de vagas
 const vagasExemplo = [
@@ -55,32 +56,46 @@ const vagasExemplo = [
 ];
 
 export default function AdminDashboard() {
-  debugger;
   const [vagas, setVagas] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 7;
-
+  const [totalVagas, setTotalVagas] = useState(0);
+  const [totalEmpresas, setTotalEmpresas] = useState(0);
+  const [totalUsuarios, setTotalUsuarios] = useState(0);
+  const { setFlashMessage } = useFlashMessage();
   useEffect(() => {
-    api.get("/vagas").then((response) => {
-      const vagasData = response.data.vagas.map((vaga) => {
-        return {
-          id: vaga._id,
-          titulo: vaga.titulo,
-          empresa: vaga.empresa.nome || "Não informado",
-          logo: "https://placehold.co/80x80/EEE/31343C",
-          localizacao: `${vaga.localizacao} (${vaga.modalidade})`,
-          tipo: vaga.modalidade,
-          data: new Date(vaga.createdAt).toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          }),
-          tags: vaga.requisitos,
-          descricao: vaga.descricao,
-        };
-      });
-      setVagas(vagasData);
-    });
+    const dashboardLoad = async () => {
+      try {
+        api.get("/empresas/DashboardAdmin/").then((response) => {
+          const { estatisticas, vagasRecentes } = response.data;
+
+          setVagas(
+            vagasRecentes.map((vaga) => ({
+              id: vaga.id,
+              titulo: vaga.titulo,
+              tipo: vaga.tipo,
+              localizacao: vaga.localizacao,
+              data: new Date(vaga.data).toLocaleDateString("pt-BR"),
+              empresa: vaga.empresa,
+              status: vaga.status,
+            }))
+          );
+
+          setTotalVagas(estatisticas.totalVagas);
+          setTotalEmpresas(estatisticas.totalEmpresas);
+          setTotalUsuarios(estatisticas.totalUsuarios);
+        });
+      } catch (error) {
+        console.error("Erro ao carregar dados da empresa:", error);
+        setFlashMessage("Erro ao carregar dados da empresa.", "error");
+        setLoading(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    dashboardLoad();
   }, []);
 
   // Paginação
@@ -93,6 +108,16 @@ export default function AdminDashboard() {
     setCurrentPage(pageNumber);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-light">
+        <AdminHeader />
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+        </main>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-light">
       <AdminHeader activeTab="dashboard" />
@@ -107,7 +132,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Cards de estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Card 1 */}
           <div className="bg-white rounded-xl shadow-soft p-6">
             <div className="flex items-center">
@@ -130,28 +155,8 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-sm text-gray-dark">Total de Vagas</p>
                 <h3 className="text-2xl font-bold text-gray-dark">
-                  {vagas.length}
+                  {totalVagas}
                 </h3>
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-center text-sm">
-                <span className="text-green-500 flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  12%
-                </span>
-                <span className="ml-2 text-gray-dark">desde o último mês</span>
               </div>
             </div>
           </div>
@@ -177,27 +182,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-sm text-gray-dark">Empresas Parceiras</p>
-                <h3 className="text-2xl font-bold text-gray-dark">18</h3>
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-center text-sm">
-                <span className="text-green-500 flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  8%
-                </span>
-                <span className="ml-2 text-gray-dark">desde o último mês</span>
+                <h3 className="text-2xl font-bold text-gray-dark">{totalEmpresas}</h3>
               </div>
             </div>
           </div>
@@ -223,79 +208,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-sm text-gray-dark">Usuários Cadastrados</p>
-                <h3 className="text-2xl font-bold text-gray-dark">1,254</h3>
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-center text-sm">
-                <span className="text-green-500 flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  24%
-                </span>
-                <span className="ml-2 text-gray-dark">desde o último mês</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4 */}
-          <div className="bg-white rounded-xl shadow-soft p-6">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-4">
-                <svg
-                  className="w-6 h-6 text-primary"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-dark">Visualizações</p>
-                <h3 className="text-2xl font-bold text-gray-dark">8,521</h3>
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-center text-sm">
-                <span className="text-green-500 flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  32%
-                </span>
-                <span className="ml-2 text-gray-dark">desde o último mês</span>
+                <h3 className="text-2xl font-bold text-gray-dark">{totalUsuarios}</h3>
               </div>
             </div>
           </div>
@@ -447,7 +360,7 @@ export default function AdminDashboard() {
             </table>
           </div>
 
-          <div className="px-6 py-4 flex justify-between items-center border-t border-gray-medium">
+          <div className="px-6 py-4 flex flex-col lg:flex-row justify-between items-center border-t border-gray-medium">
             <div className="text-sm text-gray-dark">
               Mostrando{" "}
               <span className="font-medium">{indexOfFirstItem + 1}</span>

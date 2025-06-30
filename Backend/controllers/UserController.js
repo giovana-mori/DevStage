@@ -1,11 +1,11 @@
 import User from "../models/User.js";
 import Argon2 from "argon2";
 import createUserToken from "../helpers/create-token.js";
-import getToken from "../helpers/get-token.js";
 import getUserByToken from "../helpers/get-user-by-token.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import Empresa from "../models/Empresa.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,8 +24,12 @@ export default class UserController {
       instituicao_ensino,
       github,
       linkedin,
+      razao_social,
       sobre,
       portifolio,
+      localizacao,
+      setor,
+      site,
     } = req.body;
 
     try {
@@ -47,7 +51,7 @@ export default class UserController {
       const user = new User({
         nome,
         email,
-        cpf,
+        cpf: tipo === "empresa" ? cpf : cpf,
         telefone,
         password: passwordhash,
         tipo,
@@ -62,6 +66,22 @@ export default class UserController {
 
       // Tenta salvar o usuário
       const newUser = await user.save();
+
+      //se salvar usuario e o tipo for empresa, salvar tambem no model empresa
+      if (tipo === "empresa") {
+        const empresa = new Empresa({
+          nome: razao_social,
+          cnpj: cpf,
+          localizacao,
+          email_contato: email,
+          setor,
+          site,
+          telefone,
+          status,
+          user: newUser._id, // Associa o usuário ao modelo Empresa
+        });
+        await empresa.save();
+      }
 
       return res.status(201).json({
         message: "Usuário inserido com sucesso",
@@ -131,10 +151,50 @@ export default class UserController {
       const authHeader = req.headers["authorization"];
       const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
       const user = await getUserByToken(token);
+      const foto = req?.files?.foto;
       const updatedData = req.body;
+      res.status(201).json({updatedData});
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
+
+      if (foto) {
+        // 2. Verificar se e uma imagem
+        if (foto.mimetype !== "image/jpeg" && foto.mimetype !== "image/png") {
+          return res
+            .status(400)
+            .json({ message: "Apenas arquivos de imagem são permitidos." });
+        }
+
+        // 3. Configurar caminhos
+        const uploadDir = path.join(__dirname, "../public/fotos");
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        // 4. Gerar nome único
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const fileName = `foto-${uniqueSuffix}${path.extname(foto.name)}`;
+        const uploadPath = path.join(uploadDir, fileName);
+
+        // 5. Mover arquivo
+        await foto.mv(uploadPath);
+
+        // 6. Construir URL
+        const fileUrl = `/fotos/${fileName}`;
+
+        // 8. Remover arquivo anterior se existir
+        if (user.foto) {
+          const oldFilePath = path.join(uploadDir, path.basename(user.foto));
+          if (fs.existsSync(oldFilePath)) {
+            fs.unlinkSync(oldFilePath);
+          }
+        }
+
+        // 9. Atualizar usuário
+        req.body["foto"] = fileUrl;
+      }
+
       // Atualiza os campos do usuário com os dados recebidos
       const updatedUser = await User.findByIdAndUpdate(user._id, updatedData, {
         new: true,
@@ -276,7 +336,7 @@ export default class UserController {
       await curriculo.mv(uploadPath);
 
       // 6. Construir URL
-      const fileUrl = `${process.env.BASE_URL}/curriculos/${fileName}`;
+      const fileUrl = `/curriculos/${fileName}`;
 
       // 8. Remover arquivo anterior se existir
       if (user.curriculo && user.curriculo.url) {

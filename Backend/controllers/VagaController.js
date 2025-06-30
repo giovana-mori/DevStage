@@ -5,12 +5,22 @@ import getUserByToken from "../helpers/get-user-by-token.js";
 
 export default class VagaController {
   static async createVaga(req, res) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    const user = await getUserByToken(token);
+
     try {
-      // Verifica se a empresa existe
-      const empresa = await Empresa.findById(req.body.empresa);
+      // Verifica se a empresa existe, caso seja um usuario do tipo empresa, ele captura o id da empresa automaticamente pelo token
+      const empresa =
+        user.tipo === "empresa"
+          ? await Empresa.findOne({ user: user._id })
+          : await Empresa.findById(req.body.empresa);
+
       if (!empresa) {
         return res.status(404).json({ message: "Empresa não encontrada" });
       }
+
+      req.body["empresa"] = empresa._id;
 
       // Cria a vaga
       const vaga = new Vaga(req.body);
@@ -30,8 +40,17 @@ export default class VagaController {
   }
 
   static async getVagas(req, res) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    const user = await getUserByToken(token);
+
+    const empresaSelected =
+      user?.tipo === "empresa"
+        ? await Empresa.findOne({ user: user._id })
+        : null;
+
     try {
-      const {
+      let {
         search,
         modalidade,
         tipoContrato,
@@ -40,6 +59,8 @@ export default class VagaController {
         localizacao,
         sortBy = "-createdAt",
       } = req.query;
+
+      if (empresaSelected) empresa = empresaSelected.titulo;
 
       // Construir query dinâmica
       const query = {};
@@ -239,10 +260,7 @@ export default class VagaController {
                     input: "$candidatos",
                     as: "candidato",
                     cond: {
-                      $eq: [
-                        "$$candidato.usuarioId",
-                        user._id,
-                      ],
+                      $eq: ["$$candidato.usuarioId", user._id],
                     },
                   },
                 },
@@ -293,6 +311,164 @@ export default class VagaController {
     } catch (error) {
       return res.status(500).json({
         message: "Erro ao obter candidaturas",
+        error: error.message,
+      });
+    }
+  }
+
+  static async getCandidatosByEmpresa(req, res) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    const user = await getUserByToken(token);
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "Não autorizado: Token inválido ou ausente." });
+    }
+
+    let empresaSelected;
+    if (user.tipo === "empresa") {
+      empresaSelected = await Empresa.findOne({ user: user._id });
+    } else if (user.tipo === "admin" && req.params.id) {
+      empresaSelected = await Empresa.findById(req.params.id);
+    } else {
+      return res
+        .status(403)
+        .json({ message: "Acesso negado ou ID da empresa não fornecido." });
+    }
+
+    if (!empresaSelected) {
+      return res.status(404).json({ message: "Empresa não encontrada." });
+    }
+
+    try {
+      // 1. Buscar as vagas da empresa e popular os candidatos (User) e a própria Empresa
+      const vagasRaw = await Vaga.find({ empresa: empresaSelected._id })
+        // Seleciona todos os campos da vaga para serem incluídos na resposta
+        // ou você pode especificar campos como .select('titulo descricao modalidade ... candidatos empresa')
+        .populate({
+          path: "candidatos.usuarioId",
+          model: "User",
+          // Seleciona os campos específicos do usuário candidato
+          select:
+            "nome email telefone localizacao foto tipo instituicao_ensino curso curriculo.url", // Adicionado 'instituicao_ensino' e 'curso' do modelo User
+        })
+        .populate({
+          path: "empresa", // Popula os detalhes da empresa na vaga
+          model: "Empresa",
+          select: "nome", // Apenas o nome da empresa, se precisar de mais, adicione aqui
+        })
+        .exec();
+
+      let candidaturasFormatadas = []; // Array para armazenar as candidaturas no formato desejado
+      let totalCandidatos = 0; // Contador para o total de candidaturas
+
+      // 2. Processar cada vaga e seus candidatos para reformatar os dados
+      vagasRaw.forEach((vaga) => {
+        vaga.candidatos.forEach((candidatura) => {
+          // Garante que o usuarioId foi populado com sucesso
+          if (candidatura.usuarioId) {
+            totalCandidatos++; // Incrementa o contador de candidaturas
+
+            candidaturasFormatadas.push({
+              id: candidatura._id, // ID da candidatura específica
+              candidato: {
+                nome: candidatura.usuarioId.nome,
+                email: candidatura.usuarioId.email,
+                telefone: candidatura.usuarioId.telefone,
+                localizacao:
+                  candidatura.usuarioId.localizacao || "Não informado", // Adapte conforme seu User.js
+                foto:
+                  candidatura.usuarioId.foto ||
+                  "https://placehold.co/40x40/EEE/31343C", // Use um placeholder padrão se não houver foto
+                tipo: candidatura.usuarioId.tipo,
+                instituicao:
+                  candidatura.usuarioId.instituicao_ensino || "Não informado", // Do campo 'instituicao_ensino' do User
+                curso: candidatura.usuarioId.curso || "Não informado", // Do campo 'curso' do User
+                // semestre: candidatura.usuarioId.semestre || "Não informado", // Se você tiver um campo 'semestre' no modelo User
+                curriculoUrl: candidatura.usuarioId.curriculo?.url || null, // URL do currículo
+              },
+              vaga: {
+                titulo: vaga.titulo,
+                id: vaga._id, // ID da vaga
+              },
+              // Formata a data para 'YYYY-MM-DD'
+              dataCandidatura: candidatura.dataCandidatura
+                ? candidatura.dataCandidatura.toISOString().split("T")[0]
+                : null,
+              status: candidatura.status,
+              cartaApresentacao: candidatura.cartaApresentacao || "",
+            });
+          }
+        });
+      });
+
+      // 3. Enviar a resposta com os dados formatados
+      return res.status(200).json({
+        message: "Candidaturas obtidas com sucesso",
+        totalVagas: vagasRaw.length, // Total de vagas distintas da empresa
+        totalCandidatos: totalCandidatos, // Total de candidaturas (uma candidatura = um usuário em uma vaga)
+        candidaturas: candidaturasFormatadas, // O array de candidaturas no formato plano
+      });
+    } catch (error) {
+      console.error("Erro ao obter candidaturas por empresa:", error);
+      return res.status(500).json({
+        message: "Erro interno do servidor ao obter candidaturas.",
+        error: error.message,
+      });
+    }
+  }
+
+  static async alterarStatusCandidatura(req, res) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    const user = await getUserByToken(token);
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "Não autorizado: Token inválido ou ausente." });
+    }
+
+    let empresaSelected;
+    if (user.tipo === "empresa") {
+      empresaSelected = await Empresa.findOne({ user: user._id });
+    } else {
+      return res.status(403).json({ message: "Acesso negado" });
+    }
+
+    if (!empresaSelected)
+      return res.status(403).json({ message: "Acesso negado" });
+
+    const { vagaId, candidaturaId } = req.body;
+
+    //checar se user esta cadastrado na empresa para poder executar esta acao
+
+    try {
+      const vaga = await Vaga.findById(vagaId);
+      if (!vaga) {
+        return res.status(404).json({ message: "Vaga não encontrada." });
+      }
+
+      const candidatura = vaga.candidatos.find(
+        (c) => c._id.toString() === candidaturaId
+      );
+      if (!candidatura) {
+        return res.status(404).json({ message: "Candidatura não encontrada." });
+      }
+
+      candidatura.status = "aprovada";
+      await vaga.save();
+
+      return res.status(200).json({
+        message: "Candidatura aprovada com sucesso.",
+        candidatura: candidatura,
+      });
+    } catch (error) {
+      console.error("Erro ao aprovar candidatura:", error);
+      return res.status(500).json({
+        message: "Erro interno do servidor ao aprovar candidatura.",
         error: error.message,
       });
     }

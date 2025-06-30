@@ -14,6 +14,7 @@ import {
   Linkedin,
   FileText,
   Briefcase,
+  PinIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -24,14 +25,13 @@ function Register() {
     email: "",
     telefone: "",
     password: "",
-    cpf: "000.000.000-00",
+    cpf: "",
     tipo: "estudante",
     status: "Ativo",
     curso: "",
     instituicao_ensino: "",
     github: "",
     linkedin: "",
-    sobre: "",
     portifolio: "",
   });
 
@@ -50,15 +50,28 @@ function Register() {
 
   const validateForm = () => {
     const newErrors = {};
-    const requiredFields = [
-      "nome",
-      "email",
-      "password",
-      "tipo",
-      "status",
-      "curso",
-      "instituicao_ensino",
-    ];
+    const requiredFields =
+      user.tipo === "estudante"
+        ? [
+            "nome",
+            "email",
+            "password",
+            "tipo",
+            "cpf",
+            "status",
+            "curso",
+            "instituicao_ensino",
+          ]
+        : [
+            "razao_social",
+            "email",
+            "password",
+            "tipo",
+            "status",
+            "cnpj",
+            "localizacao",
+            "site",
+          ];
 
     requiredFields.forEach((field) => {
       if (!user[field]) newErrors[field] = "Campo obrigatório";
@@ -124,6 +137,9 @@ function Register() {
                       <option value="empresa">Empresa</option>
                     </select>
                   </div>
+                  {errors.tipo && (
+                    <p className="mt-1 text-sm text-red-600">{errors.tipo}</p>
+                  )}
                 </div>
                 {/* Nome */}
                 {user.tipo === "estudante" ? (
@@ -154,6 +170,29 @@ function Register() {
                         </p>
                       )}
                     </div>
+                    <div>
+                      {/* cpf */}
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        CPF
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <FileText className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="cpf"
+                          value={user.cpf}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Seu CPF"
+                        />
+                      </div>
+                      {errors.cpf && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.cpf}
+                        </p>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <>
@@ -174,6 +213,11 @@ function Register() {
                           placeholder="Seu CNPJ"
                         />
                       </div>
+                      {errors.cnpj && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.cnpj}
+                        </p>
+                      )}
                     </div>
 
                     {/* Razão Social */}
@@ -193,6 +237,59 @@ function Register() {
                           placeholder="Sua razão social"
                         />
                       </div>
+                      {errors.razao_social && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.razao_social}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Localizacao */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Localização
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <PinIcon className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="localizacao"
+                          value={user.localizacao}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Sua localização"
+                        />
+                      </div>
+                      {errors.localizacao && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.localizacao}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Site */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Site
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Linkedin className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          name="site"
+                          value={user.site}
+                          onChange={handleChange}
+                          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                          placeholder="Seu site"
+                        />
+                      </div>
+                      {errors.site && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.site}
+                        </p>
+                      )}
                     </div>
                   </>
                 )}
@@ -240,6 +337,11 @@ function Register() {
                       placeholder="(00) 00000-0000"
                     />
                   </div>
+                  {errors.telefone && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.telefone}
+                    </p>
+                  )}
                 </div>
 
                 {/* Senha */}
@@ -383,37 +485,25 @@ function Register() {
 
               {/* Sobre e Portfólio */}
               <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sobre você (Opcional)
-                  </label>
-                  <textarea
-                    name="sobre"
-                    value={user.sobre}
-                    onChange={handleChange}
-                    className="block w-full px-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                    rows="3"
-                    placeholder="Fale um pouco sobre você..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Portfólio (Opcional)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FileText className="h-5 w-5 text-gray-400" />
+                {user.tipo.toLowerCase() === "estudante" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Portfólio (Opcional)
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <FileText className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        name="portifolio"
+                        value={user.portifolio}
+                        onChange={handleChange}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                        placeholder="Link do seu portfólio"
+                      />
                     </div>
-                    <input
-                      name="portifolio"
-                      value={user.portifolio}
-                      onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                      placeholder="Link do seu portfólio"
-                    />
                   </div>
-                </div>
+                )}
               </div>
 
               {errors.submit && (

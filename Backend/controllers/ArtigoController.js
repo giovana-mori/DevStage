@@ -1,16 +1,55 @@
 import Artigo from "../models/Artigo.js";
+import createUserToken from "../helpers/create-token.js";
+import getUserByToken from "../helpers/get-user-by-token.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default class ArtigoController {
   static async createArtigo(req, res) {
-    const imagem_capa = req.file?.path;
-
-    const artigo = new Artigo({
-      ...req.body,
-      imagem_capa,
-      tags: req.body.tags || [],
-    });
-
     try {
+      const imagem_capa = req.files?.imagem_capa;
+      const authHeader = req.headers["authorization"];
+      const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+      const user = await getUserByToken(token);
+
+      if (!user) {
+        return res.status(404).json({ message: "Usuario não permitido" });
+      }
+      if (imagem_capa) {
+        // 2. Verificar se e uma, nao importa o tipo
+        if (imagem_capa.mimetype.split("/")[0] !== "image") {
+          return res
+            .status(400)
+            .json({ message: "Apenas arquivos de imagem são permitidos." });
+        }
+
+        // 3. Configurar caminhos
+        const uploadDir = path.join(__dirname, "../public/imagem_capas");
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        // 4. Gerar nome único
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const fileName = `imagem_capa-${uniqueSuffix}${path.extname(
+          imagem_capa.name
+        )}`;
+        const uploadPath = path.join(uploadDir, fileName);
+
+        // 5. Mover arquivo
+        await imagem_capa.mv(uploadPath);
+
+        // 6. Construir URL
+        const fileUrl = `/imagem_capas/${fileName}`;
+
+        // 9. Atualizar usuário
+        req.body["imagem_capa"] = fileUrl;
+      }
+      const artigo = new Artigo(req.body);
       const newArtigo = await artigo.save();
       return res
         .status(201)
@@ -26,7 +65,7 @@ export default class ArtigoController {
       return res.status(500).json({ message: "Erro ao criar artigo" });
     }
   }
-  
+
   static async getArtigos(req, res) {
     try {
       const { search } = req.query;
@@ -63,7 +102,7 @@ export default class ArtigoController {
         .status(422)
         .json({ message: "Titulo do artigo obrigatório na busca" });
     }
-    const artigo = await Artigo.find({ titulo }).sort("-createdAt");
+    const artigo = await Artigo.findOne({ titulo }).sort("-createdAt");
     if (!artigo || artigo.length === 0) {
       return res.status(404).json({ message: "Artigo não encontrado" });
     }
@@ -71,20 +110,65 @@ export default class ArtigoController {
   }
 
   static async updateArtigo(req, res) {
-    const { _id } = req.params;
-    const imagem_capa = req.file?.path;
-
     try {
-      const artigo = await Artigo.findById(_id);
+      const { id } = req.params;
+      const imagem_capa = req?.files?.imagem_capa;
+      const authHeader = req.headers["authorization"];
+      const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+      const user = await getUserByToken(token);
+      const artigo = await Artigo.findById(id);
       if (!artigo) {
         return res.status(404).json({ message: "Artigo não encontrado" });
       }
+      if (!user) {
+        return res.status(404).json({ message: "Usuario não permitido" });
+      }
+      if (imagem_capa) {
+        // 2. Verificar se e uma, nao importa o tipo
+        if (imagem_capa.mimetype.split("/")[0] !== "image") {
+          return res
+            .status(400)
+            .json({ message: "Apenas arquivos de imagem são permitidos." });
+        }
+
+        // 3. Configurar caminhos
+        const uploadDir = path.join(__dirname, "../public/imagem_capas");
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        // 4. Gerar nome único
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const fileName = `imagem_capa-${uniqueSuffix}${path.extname(
+          imagem_capa.name
+        )}`;
+        const uploadPath = path.join(uploadDir, fileName);
+
+        // 5. Mover arquivo
+        await imagem_capa.mv(uploadPath);
+
+        // 6. Construir URL
+        const fileUrl = `/imagem_capas/${fileName}`;
+
+        // 8. Remover arquivo anterior se existir
+        if (artigo.imagem_capa) {
+          const oldFilePath = path.join(
+            uploadDir,
+            path.basename(artigo.imagem_capa)
+          );
+          if (fs.existsSync(oldFilePath)) {
+            fs.unlinkSync(oldFilePath);
+          }
+        }
+
+        // 9. Atualizar usuário
+        req.body["imagem_capa"] = fileUrl;
+      }
 
       const updatedArtigo = await Artigo.findByIdAndUpdate(
-        _id,
+        id,
         {
           ...req.body,
-          imagem_capa,
         },
         { new: true }
       );
@@ -99,9 +183,9 @@ export default class ArtigoController {
   }
 
   static async deleteArtigo(req, res) {
-    const { _id } = req.params;
+    const { id } = req.params;
     try {
-      const artigo = await Artigo.findByIdAndDelete(_id);
+      const artigo = await Artigo.findByIdAndDelete(id);
       if (!artigo) {
         return res.status(404).json({ message: "Artigo não encontrado" });
       }

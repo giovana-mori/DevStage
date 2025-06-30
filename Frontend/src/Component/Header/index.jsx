@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useContext, useState } from "react";
 import { Context } from "../../context/UserContext";
 function Header() {
-  const { authenticated, logout } = useContext(Context);
+  const { authenticated, logout, user, loading } = useContext(Context);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
     <div className="pt-16">
@@ -68,7 +68,7 @@ function Header() {
                     className="flex items-center text-sm font-medium text-gray-dark hover:text-primary focus:outline-none"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                   >
-                    <span className="mr-2">Olá, <strong>Fulano</strong></span>
+                    <span className="mr-2">Olá, <strong>{user.nome}</strong></span>
                     <svg
                       className="h-5 w-5"
                       xmlns="http://www.w3.org/2000/svg"

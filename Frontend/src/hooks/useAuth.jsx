@@ -43,7 +43,7 @@ export default function useAuth() {
     try {
       const response = await api.post("users/Login", user);
       console.log(response.data);
-      debugger;
+      
       await authUser(response.data);
       navigate("/");
       return response.data;

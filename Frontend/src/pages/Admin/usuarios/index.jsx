@@ -313,7 +313,7 @@ export default function AdminUsuarios() {
           </div>
 
           {/* Paginação */}
-          <div className="px-6 py-4 flex justify-between items-center border-t border-gray-medium">
+          <div className="px-6 py-4 flex flex-col lg:flex-row justify-between items-center border-t border-gray-medium">
             <div className="text-sm text-gray-dark">
               Mostrando{" "}
               <span className="font-medium">{indexOfFirstItem + 1}</span> a{" "}

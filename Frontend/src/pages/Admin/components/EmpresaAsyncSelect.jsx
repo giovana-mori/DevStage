@@ -20,7 +20,7 @@ const EmpresaAsyncSelect = ({
 
   const loadEmpresas = useCallback(
     debounce(async (inputValue, callback) => {
-      debugger;
+      
       try {
         setIsLoading(true);
         const res = await api.get(`/empresas/?search=${inputValue}`);

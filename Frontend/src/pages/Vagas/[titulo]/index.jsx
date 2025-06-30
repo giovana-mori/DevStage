@@ -18,40 +18,52 @@ import {
 import Header from "../../../Component/Header";
 import { Link, useParams } from "react-router-dom";
 import api from "../../../utils/api";
+import useFlashMessage from "../../../hooks/useFlashMessage";
 import { Context } from "../../../context/UserContext";
 
 export default function DetalhesVaga() {
-  const { authenticated } = useContext(Context);
+  const { authenticated, user, loading } = useContext(Context);
   const { titulo } = useParams();
   const [vaga, setVaga] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [candidatando, setCandidatando] = useState(false);
   const [jaCandidatou, setJaCandidatou] = useState(false);
   const [favoritada, setFavoritada] = useState(false);
   const [mostrarModalCandidatura, setMostrarModalCandidatura] = useState(false);
   const [cartaApresentacao, setCartaApresentacao] = useState("");
+  const { setFlashMessage } = useFlashMessage();
+  debugger;
 
   // Simulação de dados da vaga
   useEffect(() => {
     const carregarVaga = async () => {
-      setLoading(true);
       // Simulação de API call
       try {
         const response = await api.get(`/vagas/${titulo}`);
         const { vaga } = response.data;
+        debugger;
 
         if (vaga) setVaga(vaga);
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Erro ao carregar vaga:", error);
         }
-      } finally {
-        setLoading(false);
       }
     };
 
     carregarVaga();
   }, [titulo]);
+
+  useEffect(() => {
+    if (user && vaga) {
+      const candidatura = vaga.candidatos.find(
+        (candidatura) => candidatura.usuarioId === user._id
+      );
+      if (candidatura) {
+        setJaCandidatou(true);
+        setCartaApresentacao(candidatura.cartaApresentacao);
+      }
+    }
+  }, [user, vaga]);
 
   const handleCandidatar = async (e) => {
     e.preventDefault();
@@ -62,13 +74,13 @@ export default function DetalhesVaga() {
       const response = await api.post(`/vagas/CandidatarVaga/${id}`);
       const { vaga } = response.data;
       if (vaga) setVaga(vaga);
+      setJaCandidatou(true);
     } catch (error) {
       if (error.name !== "AbortError") {
         console.error("Erro ao carregar vaga:", error);
       }
+      setFlashMessage("Voce precisa estar logado para se candidatar.", "error");
     } finally {
-      setLoading(false);
-      setJaCandidatou(true);
       setCandidatando(false);
       setMostrarModalCandidatura(false);
       setCartaApresentacao("");
@@ -152,9 +164,13 @@ export default function DetalhesVaga() {
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="flex items-start gap-4 mb-4">
                   <img
-                    src={"/placeholder.svg"}
+                    src={
+                      vaga.empresa?.logo
+                        ? process.env.REACT_APP_API + vaga.empresa.logo
+                        : "https://placehold.co/100x100/EEE/31343C"
+                    }
                     alt={vaga.empresa.nome}
-                    className="w-16 h-16 rounded-lg object-cover"
+                    className="w-16 h-16 rounded-lg object-contain"
                   />
                   <div className="flex-1">
                     <h1 className="text-2xl font-bold text-gray-800 mb-2">
@@ -325,17 +341,14 @@ export default function DetalhesVaga() {
                     ))}
                 </div>
 
-                <h3 className="font-semibold text-gray-800 mb-3">
-                  Nossa Cultura
-                </h3>
-                <ul className="space-y-2">
-                  {vaga?.empresa?.cultura?.map((item, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <span className="text-gray-600">{item}</span>
-                    </li>
-                  ))}
-                </ul>
+                {vaga?.empresa?.cultura && (
+                  <>
+                    <h3 className="font-semibold text-gray-800 mb-3">
+                      Nossa Cultura
+                    </h3>
+                    <div className="space-y-2">{vaga.empresa.cultura}</div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -356,11 +369,10 @@ export default function DetalhesVaga() {
                       <CheckCircle className="w-8 h-8 text-green-600" />
                     </div>
                     <h3 className="font-semibold text-gray-800 mb-2">
-                      Candidatura enviada!
+                      Candidatura efetuada!
                     </h3>
                     <p className="text-gray-600 text-sm mb-4">
-                      Sua candidatura foi enviada com sucesso. A empresa entrará
-                      em contato em breve.
+                      Tudo certo! Agora é só aguardar o contato da empresa.
                     </p>
                     <button className="w-full bg-gray-100 text-gray-600 py-3 rounded-lg font-semibold">
                       Candidatura enviada
@@ -384,7 +396,9 @@ export default function DetalhesVaga() {
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Candidatos</span>
-                    <span className="font-semibold">{vaga.candidatos.length}</span>
+                    <span className="font-semibold">
+                      {vaga.candidatos.length}
+                    </span>
                   </div>
                 </div>
               </div>
