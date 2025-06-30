@@ -71,6 +71,9 @@ function Login() {
         <div className="max-w-md w-full space-y-8">
           {/* Logo e Título */}
           <div className="text-center">
+            <Link to={"/"}>
+              <img src="/images/logo_devstage.png" className="max-w-30 mx-auto my-6" />
+            </Link>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
               Bem-vindo de volta!
             </h2>
@@ -100,11 +103,10 @@ function Login() {
                     type="email"
                     value={user.email}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
-                      errors.email
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={`block w-full pl-10 pr-3 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${errors.email
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                      }`}
                     placeholder="seu@email.com"
                   />
                 </div>
@@ -131,11 +133,10 @@ function Login() {
                     type={showPassword ? "text" : "password"}
                     value={user.password}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-12 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
-                      errors.password
-                        ? "border-red-300 bg-red-50"
-                        : "border-gray-300"
-                    }`}
+                    className={`block w-full pl-10 pr-12 py-3 border rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${errors.password
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
+                      }`}
                     placeholder="Sua senha"
                   />
                   <button
