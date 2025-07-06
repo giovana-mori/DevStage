@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27018:27017"  # Mapeia para porta diferente na máquina host
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    command: mongod --bind_ip_all
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.100  # IP fixo na rede
+
+  backend:
+    build: ./Backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://root:example@172.20.0.100:27017/dev_stage?authSource=admin
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+  frontend:
+    build: ./Frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24  # Define uma sub-rede específica
+
+volumes:
+  mongo-data:
