@@ -146,7 +146,7 @@ export default function BlogPost() {
                 <section className="py-12">
                     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="max-w-7xl mx-auto">
-                            <div className="relative h-80 w-full mb-8 rounded-xl overflow-hidden">
+                            <div className="relative h-[600px] w-full mb-8 rounded-xl overflow-hidden">
                                 <img src={process.env.REACT_APP_API + post?.imagem_capa || "/placeholder.svg"} alt={post.titulo} fill className="object-cover w-full" />
                             </div>
 
